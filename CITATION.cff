@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this code or the released predictions, please cite the paper."
+title: "tfm-churn-profit-audit"
+authors:
+  - family-names: Polas
+    given-names: Ismail Hossain
+    affiliation: Jahangirnagar University
+    email: ismailhossainpolash@gmail.com
+license: MIT
+repository-code: "https://github.com/ihpolash/tfm-churn-profit-audit"
+version: "1.0"
+date-released: "2026-10-27"
+preferred-citation:
+  type: article
+  title: "Do Tabular Foundation Models Pay Off for Churn? A Profit-, Calibration- and Tuning-Aware Re-evaluation"
+  authors:
+    - family-names: Polas
+      given-names: Ismail Hossain
+      affiliation: Jahangirnagar University
+  year: 2026
