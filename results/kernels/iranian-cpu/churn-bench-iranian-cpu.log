@@ -1,0 +1,39 @@
+[{"stream_name":"stdout","time":23.344271791,"data":"13:47:07 lightgbm 4.6.0\n"}
+,{"stream_name":"stdout","time":23.344974142,"data":"13:47:07 xgboost 3.4.1\n"}
+,{"stream_name":"stdout","time":23.345594668,"data":"13:47:07 catboost 1.2.10\n"}
+,{"stream_name":"stdout","time":23.346211131,"data":"13:47:07 interpret 0.7.8\n"}
+,{"stream_name":"stdout","time":23.347204497,"data":"13:47:07 optuna 5.0.0\n"}
+,{"stream_name":"stdout","time":23.348603708,"data":"13:47:07 scikit-learn 1.6.1\n"}
+,{"stream_name":"stdout","time":23.691640012,"data":"13:47:08 == iranian: X=(2836, 15) churn=0.1555 cat=0 duplicate rows removed=314\n"}
+,{"stream_name":"stdout","time":24.132839538,"data":"13:47:08    lr s0 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9476\n"}
+,{"stream_name":"stdout","time":56.585857517,"data":"13:47:41    lgbm s0 fit=32s pred/10k=0.4s gpu=0.0GB auc=0.9805\n"}
+,{"stream_name":"stdout","time":71.885962969,"data":"13:47:56    xgb s0 fit=15s pred/10k=0.1s gpu=0.0GB auc=0.9790\n"}
+,{"stream_name":"stdout","time":240.326758502,"data":"13:50:44    catboost s0 fit=168s pred/10k=0.1s gpu=0.0GB auc=0.9815\n"}
+,{"stream_name":"stdout","time":291.43242518,"data":"13:51:35    ebm s0 fit=51s pred/10k=0.0s gpu=0.0GB auc=0.9788\n"}
+,{"stream_name":"stdout","time":291.478432159,"data":"13:51:35    lr s1 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9345\n"}
+,{"stream_name":"stdout","time":307.143004315,"data":"13:51:51    lgbm s1 fit=16s pred/10k=0.1s gpu=0.0GB auc=0.9882\n"}
+,{"stream_name":"stdout","time":320.164785363,"data":"13:52:04    xgb s1 fit=13s pred/10k=0.1s gpu=0.0GB auc=0.9879\n"}
+,{"stream_name":"stdout","time":362.966778674,"data":"13:52:47    catboost s1 fit=43s pred/10k=0.0s gpu=0.0GB auc=0.9832\n"}
+,{"stream_name":"stdout","time":406.4067248,"data":"13:53:30    ebm s1 fit=43s pred/10k=0.0s gpu=0.0GB auc=0.9875\n"}
+,{"stream_name":"stdout","time":406.447756945,"data":"13:53:30    lr s2 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9374\n"}
+,{"stream_name":"stdout","time":426.314278574,"data":"13:53:50    lgbm s2 fit=20s pred/10k=0.3s gpu=0.0GB auc=0.9840\n"}
+,{"stream_name":"stdout","time":437.67084282,"data":"13:54:02    xgb s2 fit=11s pred/10k=0.0s gpu=0.0GB auc=0.9800\n"}
+,{"stream_name":"stdout","time":526.765380266,"data":"13:55:31    catboost s2 fit=89s pred/10k=0.0s gpu=0.0GB auc=0.9824\n"}
+,{"stream_name":"stdout","time":578.627598655,"data":"13:56:23    ebm s2 fit=52s pred/10k=0.0s gpu=0.0GB auc=0.9754\n"}
+,{"stream_name":"stdout","time":578.665785103,"data":"13:56:23    lr s3 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9324\n"}
+,{"stream_name":"stdout","time":600.924126764,"data":"13:56:45    lgbm s3 fit=22s pred/10k=0.4s gpu=0.0GB auc=0.9889\n"}
+,{"stream_name":"stdout","time":619.267302153,"data":"13:57:03    xgb s3 fit=18s pred/10k=0.1s gpu=0.0GB auc=0.9884\n"}
+,{"stream_name":"stdout","time":680.032432598,"data":"13:58:04    catboost s3 fit=61s pred/10k=0.0s gpu=0.0GB auc=0.9919\n"}
+,{"stream_name":"stdout","time":730.856623047,"data":"13:58:55    ebm s3 fit=51s pred/10k=0.0s gpu=0.0GB auc=0.9838\n"}
+,{"stream_name":"stdout","time":730.899517718,"data":"13:58:55    lr s4 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9545\n"}
+,{"stream_name":"stdout","time":741.174201263,"data":"13:59:05    lgbm s4 fit=10s pred/10k=0.1s gpu=0.0GB auc=0.9912\n"}
+,{"stream_name":"stdout","time":753.564143234,"data":"13:59:17    xgb s4 fit=12s pred/10k=0.0s gpu=0.0GB auc=0.9873\n"}
+,{"stream_name":"stdout","time":813.540401447,"data":"14:00:17    catboost s4 fit=60s pred/10k=0.0s gpu=0.0GB auc=0.9897\n"}
+,{"stream_name":"stdout","time":865.286911535,"data":"14:01:09    ebm s4 fit=52s pred/10k=0.0s gpu=0.0GB auc=0.9884\n"}
+,{"stream_name":"stderr","time":869.416504852,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":869.416565872,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":869.77643235,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":869.776472923,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":870.816687301,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":871.608293524,"data":"[NbConvertApp] Writing 367159 bytes to __results__.html\n"}
+]

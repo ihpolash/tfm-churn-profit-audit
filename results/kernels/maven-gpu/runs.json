@@ -1,0 +1,222 @@
+[
+ {
+  "dataset": "maven",
+  "model": "tabicl_v2",
+  "seed": 0,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 5.185709476470947,
+  "pred_s_per_10k": 20.410338012510078,
+  "status": "ok",
+  "gpu_peak_gb": 2.776063488
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5",
+  "seed": 0,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 4.784565448760986,
+  "pred_s_per_10k": 66.5212473485828,
+  "status": "ok",
+  "gpu_peak_gb": 6.397758464
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5_fast",
+  "seed": 0,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 1.7526354789733887,
+  "pred_s_per_10k": 12.342077828321905,
+  "status": "ok",
+  "gpu_peak_gb": 4.021357568
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_2_5",
+  "seed": 0,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 2.978975772857666,
+  "pred_s_per_10k": 51.038221813659206,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ },
+ {
+  "dataset": "maven",
+  "model": "tabicl_v2",
+  "seed": 1,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.7463135719299316,
+  "pred_s_per_10k": 13.357628820879507,
+  "status": "ok",
+  "gpu_peak_gb": 2.776210432
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5",
+  "seed": 1,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.6693501472473145,
+  "pred_s_per_10k": 38.840025437258085,
+  "status": "ok",
+  "gpu_peak_gb": 6.398805504
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5_fast",
+  "seed": 1,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.3040306568145752,
+  "pred_s_per_10k": 12.529513181069914,
+  "status": "ok",
+  "gpu_peak_gb": 4.021551104
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_2_5",
+  "seed": 1,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.6238710880279541,
+  "pred_s_per_10k": 51.81197874101051,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ },
+ {
+  "dataset": "maven",
+  "model": "tabicl_v2",
+  "seed": 2,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.7286653518676758,
+  "pred_s_per_10k": 13.64767822763446,
+  "status": "ok",
+  "gpu_peak_gb": 2.776210432
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5",
+  "seed": 2,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.5564558506011963,
+  "pred_s_per_10k": 39.903851669728304,
+  "status": "ok",
+  "gpu_peak_gb": 6.398805504
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5_fast",
+  "seed": 2,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.45650315284729004,
+  "pred_s_per_10k": 13.002301926677976,
+  "status": "ok",
+  "gpu_peak_gb": 4.021551104
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_2_5",
+  "seed": 2,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.6226248741149902,
+  "pred_s_per_10k": 52.937788377220606,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ },
+ {
+  "dataset": "maven",
+  "model": "tabicl_v2",
+  "seed": 3,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.7631452083587646,
+  "pred_s_per_10k": 13.847888330045707,
+  "status": "ok",
+  "gpu_peak_gb": 2.776210432
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5",
+  "seed": 3,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.6582300662994385,
+  "pred_s_per_10k": 40.639754673056245,
+  "status": "ok",
+  "gpu_peak_gb": 6.398805504
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5_fast",
+  "seed": 3,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.28929686546325684,
+  "pred_s_per_10k": 12.94380797240007,
+  "status": "ok",
+  "gpu_peak_gb": 4.021551104
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_2_5",
+  "seed": 3,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.5965824127197266,
+  "pred_s_per_10k": 53.61635695820694,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ },
+ {
+  "dataset": "maven",
+  "model": "tabicl_v2",
+  "seed": 4,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.745647668838501,
+  "pred_s_per_10k": 14.034176813452667,
+  "status": "ok",
+  "gpu_peak_gb": 2.776210432
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5",
+  "seed": 4,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.6481838226318359,
+  "pred_s_per_10k": 41.04122768222652,
+  "status": "ok",
+  "gpu_peak_gb": 6.398805504
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_3_5_fast",
+  "seed": 4,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.28437376022338867,
+  "pred_s_per_10k": 13.196169877812062,
+  "status": "ok",
+  "gpu_peak_gb": 4.021551104
+ },
+ {
+  "dataset": "maven",
+  "model": "tabpfn_2_5",
+  "seed": 4,
+  "n_train": 3953,
+  "n_test": 1318,
+  "fit_s": 0.6787228584289551,
+  "pred_s_per_10k": 54.50057513073471,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ }
+]

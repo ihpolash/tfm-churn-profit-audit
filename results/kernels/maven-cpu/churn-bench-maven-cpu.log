@@ -1,0 +1,39 @@
+[{"stream_name":"stdout","time":22.407753716,"data":"19:08:20 lightgbm 4.6.0\n"}
+,{"stream_name":"stdout","time":22.408326754,"data":"19:08:20 xgboost 3.4.1\n"}
+,{"stream_name":"stdout","time":22.408932674,"data":"19:08:20 catboost 1.2.10\n"}
+,{"stream_name":"stdout","time":22.409464999,"data":"19:08:20 interpret 0.7.8\n"}
+,{"stream_name":"stdout","time":22.41031337,"data":"19:08:20 optuna 5.0.0\n"}
+,{"stream_name":"stdout","time":22.411589441,"data":"19:08:20 scikit-learn 1.6.1\n"}
+,{"stream_name":"stdout","time":22.746154708,"data":"19:08:20 == maven: X=(6589, 34) churn=0.2837 cat=19\n"}
+,{"stream_name":"stdout","time":23.264698609,"data":"19:08:21    lr s0 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9171\n"}
+,{"stream_name":"stdout","time":58.785376014,"data":"19:08:56    lgbm s0 fit=35s pred/10k=0.2s gpu=0.0GB auc=0.9413\n"}
+,{"stream_name":"stdout","time":114.970797753,"data":"19:09:53    xgb s0 fit=56s pred/10k=0.1s gpu=0.0GB auc=0.9401\n"}
+,{"stream_name":"stdout","time":158.072279307,"data":"19:10:36    catboost s0 fit=43s pred/10k=0.0s gpu=0.0GB auc=0.9417\n"}
+,{"stream_name":"stdout","time":242.905752449,"data":"19:12:00    ebm s0 fit=85s pred/10k=0.0s gpu=0.0GB auc=0.9424\n"}
+,{"stream_name":"stdout","time":243.029647266,"data":"19:12:01    lr s1 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9190\n"}
+,{"stream_name":"stdout","time":285.330512398,"data":"19:12:43    lgbm s1 fit=42s pred/10k=0.5s gpu=0.0GB auc=0.9475\n"}
+,{"stream_name":"stdout","time":334.703967886,"data":"19:13:32    xgb s1 fit=49s pred/10k=0.1s gpu=0.0GB auc=0.9457\n"}
+,{"stream_name":"stdout","time":399.700889437,"data":"19:14:37    catboost s1 fit=65s pred/10k=0.0s gpu=0.0GB auc=0.9446\n"}
+,{"stream_name":"stdout","time":480.272953513,"data":"19:15:58    ebm s1 fit=81s pred/10k=0.0s gpu=0.0GB auc=0.9496\n"}
+,{"stream_name":"stdout","time":480.38958873,"data":"19:15:58    lr s2 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9132\n"}
+,{"stream_name":"stdout","time":495.137238389,"data":"19:16:13    lgbm s2 fit=15s pred/10k=0.1s gpu=0.0GB auc=0.9396\n"}
+,{"stream_name":"stdout","time":524.826805756,"data":"19:16:42    xgb s2 fit=30s pred/10k=0.0s gpu=0.0GB auc=0.9405\n"}
+,{"stream_name":"stdout","time":548.896611008,"data":"19:17:06    catboost s2 fit=24s pred/10k=0.0s gpu=0.0GB auc=0.9387\n"}
+,{"stream_name":"stdout","time":627.711835539,"data":"19:18:25    ebm s2 fit=79s pred/10k=0.0s gpu=0.0GB auc=0.9388\n"}
+,{"stream_name":"stdout","time":627.825685785,"data":"19:18:25    lr s3 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9123\n"}
+,{"stream_name":"stdout","time":658.303309996,"data":"19:18:56    lgbm s3 fit=30s pred/10k=0.3s gpu=0.0GB auc=0.9382\n"}
+,{"stream_name":"stdout","time":682.78476052,"data":"19:19:20    xgb s3 fit=24s pred/10k=0.0s gpu=0.0GB auc=0.9361\n"}
+,{"stream_name":"stdout","time":713.652597339,"data":"19:19:51    catboost s3 fit=31s pred/10k=0.0s gpu=0.0GB auc=0.9419\n"}
+,{"stream_name":"stdout","time":792.11472151,"data":"19:21:10    ebm s3 fit=78s pred/10k=0.0s gpu=0.0GB auc=0.9371\n"}
+,{"stream_name":"stdout","time":792.229675204,"data":"19:21:10    lr s4 fit=0s pred/10k=0.1s gpu=0.0GB auc=0.9229\n"}
+,{"stream_name":"stdout","time":807.077307543,"data":"19:21:25    lgbm s4 fit=15s pred/10k=0.0s gpu=0.0GB auc=0.9374\n"}
+,{"stream_name":"stdout","time":826.103756291,"data":"19:21:44    xgb s4 fit=19s pred/10k=0.0s gpu=0.0GB auc=0.9393\n"}
+,{"stream_name":"stdout","time":876.372272466,"data":"19:22:34    catboost s4 fit=50s pred/10k=0.0s gpu=0.0GB auc=0.9396\n"}
+,{"stream_name":"stdout","time":951.704731858,"data":"19:23:49    ebm s4 fit=75s pred/10k=0.0s gpu=0.0GB auc=0.9396\n"}
+,{"stream_name":"stderr","time":955.456976999,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":955.457173564,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":955.777605577,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":955.777633329,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":956.74032076,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":957.426902508,"data":"[NbConvertApp] Writing 350100 bytes to __results__.html\n"}
+]

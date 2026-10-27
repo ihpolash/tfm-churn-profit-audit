@@ -1,0 +1,17 @@
+{
+  "id": "ipolas/churn-tfm-gate-test",
+  "title": "churn-tfm-gate-test",
+  "code_file": "gate_test.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "keywords": [],
+  "dataset_sources": ["blastchar/telco-customer-churn", "ipolas/tabpfn-token"],
+  "kernel_sources": [],
+  "competition_sources": [],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}

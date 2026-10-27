@@ -1,0 +1,101 @@
+[
+ {
+  "dataset": "orange",
+  "model": "lgbm_1000trees",
+  "n_scored": 1000,
+  "n_context": 30000,
+  "fit_s": 13.859087467193604,
+  "score_s": 0.07954168319702148,
+  "s_per_10k": 0.7954168319702148,
+  "gpu_peak_gb": 0.0,
+  "n_dup_removed": 0
+ },
+ {
+  "dataset": "orange",
+  "model": "lgbm_1000trees",
+  "n_scored": 10000,
+  "n_context": 30000,
+  "fit_s": 13.859087467193604,
+  "score_s": 0.7871031761169434,
+  "s_per_10k": 0.7871031761169434,
+  "gpu_peak_gb": 0.0,
+  "n_dup_removed": 0
+ },
+ {
+  "dataset": "orange",
+  "model": "lgbm_1000trees",
+  "n_scored": 50000,
+  "n_context": 30000,
+  "fit_s": 13.859087467193604,
+  "score_s": 3.971973180770874,
+  "s_per_10k": 0.7943946361541748,
+  "gpu_peak_gb": 0.0,
+  "n_dup_removed": 0
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2",
+  "n_scored": 1000,
+  "n_context": 30000,
+  "fit_s": 12.39012622833252,
+  "score_s": 72.4682822227478,
+  "s_per_10k": 724.682822227478,
+  "gpu_peak_gb": 8.163835904,
+  "n_dup_removed": 0
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2",
+  "n_scored": 10000,
+  "n_context": 30000,
+  "fit_s": 12.39012622833252,
+  "score_s": 89.19151639938354,
+  "s_per_10k": 89.19151639938354,
+  "gpu_peak_gb": 8.163835904,
+  "n_dup_removed": 0
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2",
+  "n_scored": 50000,
+  "n_context": 30000,
+  "fit_s": 12.39012622833252,
+  "score_s": 448.91766452789307,
+  "s_per_10k": 89.78353290557862,
+  "gpu_peak_gb": 8.058604032,
+  "n_dup_removed": 0
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2_cache",
+  "n_scored": 1000,
+  "n_context": 30000,
+  "fit_s": 83.40713787078857,
+  "score_s": 1.782543420791626,
+  "s_per_10k": 17.82543420791626,
+  "gpu_peak_gb": 9.682245632,
+  "n_dup_removed": 0
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2_cache",
+  "n_scored": 10000,
+  "n_context": 30000,
+  "fit_s": 83.40713787078857,
+  "score_s": 16.71596646308899,
+  "s_per_10k": 16.71596646308899,
+  "gpu_peak_gb": 14.746271232,
+  "n_dup_removed": 0
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2_cache",
+  "n_scored": 50000,
+  "n_context": 30000,
+  "fit_s": 83.40713787078857,
+  "score_s": 116.23100566864014,
+  "s_per_10k": 23.24620113372803,
+  "gpu_peak_gb": 11.282839552,
+  "n_dup_removed": 0
+ }
+]

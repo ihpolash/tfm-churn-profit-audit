@@ -1,0 +1,118 @@
+[{"stream_name":"stdout","time":17.49743521,"data":"13:47:14 GPU Tesla T4 | TABPFN_TOKEN loaded: True\n"}
+,{"stream_name":"stdout","time":17.497480843,"data":"13:47:14 ModelVersion members: ['V2', 'V2_5', 'V2_6', 'V3', 'V3_5', 'V3_5_FAST']\n"}
+,{"stream_name":"stdout","time":17.498462706,"data":"13:47:14 tabpfn 9.2.0\n"}
+,{"stream_name":"stdout","time":17.500193027,"data":"13:47:14 tabicl 2.2.0\n"}
+,{"stream_name":"stdout","time":17.500950065,"data":"13:47:14 lightgbm 4.6.0\n"}
+,{"stream_name":"stdout","time":17.501468017,"data":"13:47:14 xgboost 3.4.1\n"}
+,{"stream_name":"stdout","time":17.502029658,"data":"13:47:14 catboost 1.2.10\n"}
+,{"stream_name":"stdout","time":17.502951205,"data":"13:47:14 optuna 5.0.0\n"}
+,{"stream_name":"stdout","time":17.50405117,"data":"13:47:14 scikit-learn 1.6.1\n"}
+,{"stream_name":"stdout","time":21.156529574,"data":"13:47:18 == telco: X=(7003, 19) duplicate rows removed=40\n"}
+,{"stream_name":"stdout","time":23.346251704,"data":"13:47:20    lgbm_1000trees n=1000 score=0.1s (0.79s/10k) gpu=0.0GB\n"}
+,{"stream_name":"stdout","time":24.143866138,"data":"13:47:21    lgbm_1000trees n=10000 score=0.8s (0.80s/10k) gpu=0.0GB\n"}
+,{"stream_name":"stdout","time":28.076251188,"data":"13:47:25    lgbm_1000trees n=50000 score=3.9s (0.79s/10k) gpu=0.0GB\n"}
+,{"stream_name":"stdout","time":30.187767819,"data":"INFO: You are downloading 'tabicl-classifier-v2-20260212.ckpt', the latest best-performing version, used in our TabICLv2 paper.\n"}
+,{"stream_name":"stdout","time":30.187807362,"data":"\n"}
+,{"stream_name":"stdout","time":30.1878123,"data":"Checkpoint 'tabicl-classifier-v2-20260212.ckpt' not cached.\n"}
+,{"stream_name":"stdout","time":30.187815896,"data":" Downloading from Hugging Face Hub (jingang/TabICL).\n"}
+,{"stream_name":"stdout","time":30.18781931,"data":"\n"}
+,{"stream_name":"stderr","time":30.408475428,"data":"Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n"}
+,{"stream_name":"stdout","time":38.027469972,"data":"13:47:35    tabicl_v2 n=1000 score=1.4s (13.71s/10k) gpu=1.7GB\n"}
+,{"stream_name":"stdout","time":41.401989107,"data":"13:47:38    tabicl_v2 n=10000 score=3.4s (3.37s/10k) gpu=4.3GB\n"}
+,{"stream_name":"stdout","time":53.686905972,"data":"13:47:50    tabicl_v2 n=50000 score=12.3s (2.46s/10k) gpu=9.5GB\n"}
+,{"stream_name":"stdout","time":74.926676692,"data":"13:48:12    tabpfn_3_5 n=1000 score=4.6s (46.23s/10k) gpu=4.4GB\n"}
+,{"stream_name":"stdout","time":86.646529493,"data":"13:48:23    tabpfn_3_5 n=10000 score=11.7s (11.72s/10k) gpu=4.4GB\n"}
+,{"stream_name":"stdout","time":130.710091189,"data":"13:49:08    tabpfn_3_5 n=50000 score=44.1s (8.81s/10k) gpu=7.0GB\n"}
+,{"stream_name":"stdout","time":137.356550638,"data":"13:49:14    tabpfn_3_5_fast n=1000 score=1.5s (14.74s/10k) gpu=2.7GB\n"}
+,{"stream_name":"stdout","time":141.024185247,"data":"13:49:18    tabpfn_3_5_fast n=10000 score=3.7s (3.67s/10k) gpu=3.5GB\n"}
+,{"stream_name":"stdout","time":154.340211912,"data":"13:49:31    tabpfn_3_5_fast n=50000 score=13.3s (2.66s/10k) gpu=6.4GB\n"}
+,{"stream_name":"stdout","time":160.310121899,"data":"13:49:37    tabpfn_3_5_cache n=1000 score=0.9s (9.06s/10k) gpu=4.6GB\n"}
+,{"stream_name":"stdout","time":168.591798008,"data":"13:49:45    tabpfn_3_5_cache n=10000 score=8.3s (8.28s/10k) gpu=4.7GB\n"}
+,{"stream_name":"stdout","time":209.243228169,"data":"13:50:26    tabpfn_3_5_cache n=50000 score=40.6s (8.13s/10k) gpu=5.0GB\n"}
+,{"stream_name":"stdout","time":224.164393147,"data":"13:50:41    tabpfn_2_5 n=1000 score=4.7s (47.31s/10k) gpu=1.1GB\n"}
+,{"stream_name":"stdout","time":236.839197218,"data":"13:50:54    tabpfn_2_5 n=10000 score=12.7s (12.67s/10k) gpu=1.1GB\n"}
+,{"stream_name":"stdout","time":284.943909906,"data":"13:51:42    tabpfn_2_5 n=50000 score=48.1s (9.62s/10k) gpu=1.8GB\n"}
+,{"stream_name":"stdout","time":285.051517972,"data":"13:51:42 == maven: X=(6589, 34) duplicate rows removed=0\n"}
+,{"stream_name":"stdout","time":286.867882547,"data":"13:51:44    lgbm_1000trees n=1000 score=0.1s (0.68s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":287.462225434,"data":"13:51:44    lgbm_1000trees n=10000 score=0.6s (0.59s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":290.412103832,"data":"13:51:47    lgbm_1000trees n=50000 score=2.9s (0.59s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":294.628067484,"data":"13:51:51    tabicl_v2 n=1000 score=1.9s (18.68s/10k) gpu=2.6GB\n"}
+,{"stream_name":"stdout","time":299.392139526,"data":"13:51:56    tabicl_v2 n=10000 score=4.8s (4.76s/10k) gpu=6.8GB\n"}
+,{"stream_name":"stdout","time":317.641490389,"data":"13:52:14    tabicl_v2 n=50000 score=18.2s (3.65s/10k) gpu=11.1GB\n"}
+,{"stream_name":"stdout","time":329.31889645,"data":"13:52:26    tabpfn_3_5 n=1000 score=5.9s (59.42s/10k) gpu=6.1GB\n"}
+,{"stream_name":"stdout","time":344.447387678,"data":"13:52:41    tabpfn_3_5 n=10000 score=15.1s (15.13s/10k) gpu=6.1GB\n"}
+,{"stream_name":"stdout","time":395.869220826,"data":"13:53:33    tabpfn_3_5 n=50000 score=51.4s (10.28s/10k) gpu=8.5GB\n"}
+,{"stream_name":"stdout","time":399.599869791,"data":"13:53:36    tabpfn_3_5_fast n=1000 score=1.8s (18.10s/10k) gpu=3.8GB\n"}
+,{"stream_name":"stdout","time":404.332123819,"data":"13:53:41    tabpfn_3_5_fast n=10000 score=4.7s (4.73s/10k) gpu=5.2GB\n"}
+,{"stream_name":"stdout","time":421.372785095,"data":"13:53:58    tabpfn_3_5_fast n=50000 score=17.0s (3.41s/10k) gpu=8.0GB\n"}
+,{"stream_name":"stdout","time":427.844360893,"data":"13:54:05    tabpfn_3_5_cache n=1000 score=1.0s (10.36s/10k) gpu=6.8GB\n"}
+,{"stream_name":"stdout","time":437.49957129,"data":"13:54:14    tabpfn_3_5_cache n=10000 score=9.7s (9.65s/10k) gpu=6.8GB\n"}
+,{"stream_name":"stdout","time":485.476503453,"data":"13:55:02    tabpfn_3_5_cache n=50000 score=48.0s (9.59s/10k) gpu=6.9GB\n"}
+,{"stream_name":"stdout","time":499.889918722,"data":"13:55:17    tabpfn_2_5 n=1000 score=7.4s (73.85s/10k) gpu=1.1GB\n"}
+,{"stream_name":"stdout","time":519.658454191,"data":"13:55:36    tabpfn_2_5 n=10000 score=19.8s (19.77s/10k) gpu=1.1GB\n"}
+,{"stream_name":"stdout","time":597.149370352,"data":"13:56:54    tabpfn_2_5 n=50000 score=77.5s (15.50s/10k) gpu=1.7GB\n"}
+,{"stream_name":"stdout","time":597.734834439,"data":"13:56:55 == cell2cell: X=(51047, 56) duplicate rows removed=0\n"}
+,{"stream_name":"stdout","time":603.636025827,"data":"13:57:00    lgbm_1000trees n=1000 score=0.1s (0.53s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":604.150276336,"data":"13:57:01    lgbm_1000trees n=10000 score=0.5s (0.51s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":606.709219952,"data":"13:57:04    lgbm_1000trees n=50000 score=2.6s (0.51s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":673.594690405,"data":"13:58:10    tabicl_v2 n=1000 score=32.5s (324.88s/10k) gpu=11.8GB\n"}
+,{"stream_name":"stdout","time":712.135992224,"data":"13:58:49    tabicl_v2 n=10000 score=38.5s (38.54s/10k) gpu=12.7GB\n"}
+,{"stream_name":"stdout","time":806.257296687,"data":"14:00:23    tabicl_v2 n=50000 score=94.1s (18.82s/10k) gpu=12.7GB\n"}
+,{"stream_name":"stdout","time":1015.611113763,"data":"14:03:52    tabpfn_3_5 n=1000 score=105.0s (1050.45s/10k) gpu=8.0GB\n"}
+,{"stream_name":"stdout","time":1146.109320896,"data":"14:06:03    tabpfn_3_5 n=10000 score=130.5s (130.49s/10k) gpu=8.0GB\n"}
+,{"stream_name":"stdout","time":1393.268244988,"data":"14:10:10    tabpfn_3_5 n=50000 score=247.2s (49.43s/10k) gpu=8.1GB\n"}
+,{"stream_name":"stdout","time":1447.513459296,"data":"14:11:04    tabpfn_3_5_fast n=1000 score=27.1s (271.27s/10k) gpu=7.4GB\n"}
+,{"stream_name":"stdout","time":1481.140406171,"data":"14:11:38    tabpfn_3_5_fast n=10000 score=33.6s (33.62s/10k) gpu=7.4GB\n"}
+,{"stream_name":"stdout","time":1543.006780774,"data":"14:12:40    tabpfn_3_5_fast n=50000 score=61.9s (12.37s/10k) gpu=7.6GB\n"}
+,{"stream_name":"stdout","time":1650.362972118,"data":"14:14:27    tabpfn_3_5_cache n=1000 score=3.4s (33.99s/10k) gpu=8.3GB\n"}
+,{"stream_name":"stdout","time":1681.09650087,"data":"14:14:58    tabpfn_3_5_cache n=10000 score=30.7s (30.73s/10k) gpu=9.3GB\n"}
+,{"stream_name":"stdout","time":1833.440016677,"data":"14:17:30    tabpfn_3_5_cache n=50000 score=152.3s (30.47s/10k) gpu=9.4GB\n"}
+,{"stream_name":"stdout","time":2442.797089396,"data":"14:27:40    tabpfn_2_5 n=1000 score=306.5s (3064.83s/10k) gpu=2.0GB\n"}
+,{"stream_name":"stdout","time":2442.797117617,"data":"14:27:40    tabpfn_2_5 n=10000 skipped (est 3065s)\n"}
+,{"stream_name":"stdout","time":2442.797123497,"data":"14:27:40    tabpfn_2_5 n=50000 skipped (est 15324s)\n"}
+,{"stream_name":"stdout","time":2442.842094872,"data":"14:27:40 == iranian: X=(2836, 15) duplicate rows removed=314\n"}
+,{"stream_name":"stdout","time":2443.485121859,"data":"14:27:40    lgbm_1000trees n=1000 score=0.0s (0.34s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":2443.825667075,"data":"14:27:41    lgbm_1000trees n=10000 score=0.3s (0.34s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":2445.54232904,"data":"14:27:42    lgbm_1000trees n=50000 score=1.7s (0.34s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":2447.125277086,"data":"14:27:44    tabicl_v2 n=1000 score=0.6s (6.09s/10k) gpu=0.8GB\n"}
+,{"stream_name":"stdout","time":2449.43791117,"data":"14:27:46    tabicl_v2 n=10000 score=2.3s (2.31s/10k) gpu=2.9GB\n"}
+,{"stream_name":"stdout","time":2459.260630904,"data":"14:27:56    tabicl_v2 n=50000 score=9.8s (1.96s/10k) gpu=9.2GB\n"}
+,{"stream_name":"stdout","time":2463.378961831,"data":"14:28:00    tabpfn_3_5 n=1000 score=2.0s (19.89s/10k) gpu=3.0GB\n"}
+,{"stream_name":"stdout","time":2471.081068553,"data":"14:28:08    tabpfn_3_5 n=10000 score=7.7s (7.70s/10k) gpu=3.1GB\n"}
+,{"stream_name":"stdout","time":2503.104521693,"data":"14:28:40    tabpfn_3_5 n=50000 score=32.0s (6.40s/10k) gpu=5.8GB\n"}
+,{"stream_name":"stdout","time":2504.456374811,"data":"14:28:41    tabpfn_3_5_fast n=1000 score=0.6s (5.74s/10k) gpu=1.4GB\n"}
+,{"stream_name":"stdout","time":2506.67772753,"data":"14:28:43    tabpfn_3_5_fast n=10000 score=2.2s (2.22s/10k) gpu=2.6GB\n"}
+,{"stream_name":"stdout","time":2516.055640324,"data":"14:28:53    tabpfn_3_5_fast n=50000 score=9.4s (1.88s/10k) gpu=5.3GB\n"}
+,{"stream_name":"stdout","time":2518.994339709,"data":"14:28:56    tabpfn_3_5_cache n=1000 score=0.6s (6.29s/10k) gpu=2.6GB\n"}
+,{"stream_name":"stdout","time":2524.982455442,"data":"14:29:02    tabpfn_3_5_cache n=10000 score=6.0s (5.99s/10k) gpu=4.1GB\n"}
+,{"stream_name":"stdout","time":2554.932818094,"data":"14:29:32    tabpfn_3_5_cache n=50000 score=29.9s (5.99s/10k) gpu=4.4GB\n"}
+,{"stream_name":"stdout","time":2558.00690197,"data":"14:29:35    tabpfn_2_5 n=1000 score=1.6s (16.02s/10k) gpu=1.0GB\n"}
+,{"stream_name":"stdout","time":2564.398247402,"data":"14:29:41    tabpfn_2_5 n=10000 score=6.4s (6.39s/10k) gpu=1.0GB\n"}
+,{"stream_name":"stdout","time":2593.248656338,"data":"14:30:10    tabpfn_2_5 n=50000 score=28.8s (5.77s/10k) gpu=1.5GB\n"}
+,{"stream_name":"stdout","time":2622.776215185,"data":"14:30:40 == orange: X=(50000, 202) duplicate rows removed=0\n"}
+,{"stream_name":"stdout","time":2634.658215147,"data":"14:30:51    lgbm_1000trees n=1000 score=0.1s (0.75s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":2635.422249528,"data":"14:30:52    lgbm_1000trees n=10000 score=0.8s (0.76s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":2639.088338097,"data":"14:30:56    lgbm_1000trees n=50000 score=3.7s (0.73s/10k) gpu=0.1GB\n"}
+,{"stream_name":"stdout","time":2791.903788987,"data":"14:33:29    tabicl_v2 n=1000 score=73.5s (734.97s/10k) gpu=8.2GB\n"}
+,{"stream_name":"stdout","time":2882.412323554,"data":"14:34:59    tabicl_v2 n=10000 score=90.5s (90.50s/10k) gpu=8.2GB\n"}
+,{"stream_name":"stdout","time":2884.105667887,"data":"14:35:01    single-call predict failed, chunking: RuntimeError\n"}
+,{"stream_name":"stdout","time":4747.633100639,"data":"15:06:04    tabicl_v2 n=50000 score=1865.2s (373.04s/10k) gpu=8.5GB\n"}
+,{"stream_name":"stdout","time":5083.975174816,"data":"15:11:41    tabpfn_3_5 n=1000 score=168.6s (1685.75s/10k) gpu=7.5GB\n"}
+,{"stream_name":"stdout","time":5083.975212176,"data":"15:11:41    tabpfn_3_5 n=10000 skipped (est 1686s)\n"}
+,{"stream_name":"stdout","time":5083.975217622,"data":"15:11:41    tabpfn_3_5 n=50000 skipped (est 8429s)\n"}
+,{"stream_name":"stdout","time":5203.565783456,"data":"15:13:40    tabpfn_3_5_fast n=1000 score=59.8s (598.45s/10k) gpu=7.0GB\n"}
+,{"stream_name":"stdout","time":5276.059254036,"data":"15:14:53    tabpfn_3_5_fast n=10000 score=72.5s (72.49s/10k) gpu=7.0GB\n"}
+,{"stream_name":"stdout","time":5405.5319179,"data":"15:17:02    tabpfn_3_5_fast n=50000 score=129.5s (25.89s/10k) gpu=7.4GB\n"}
+,{"stream_name":"stdout","time":5578.890227684,"data":"15:19:56    tabpfn_3_5_cache n=1000 score=5.0s (49.78s/10k) gpu=9.0GB\n"}
+,{"stream_name":"stdout","time":5624.22097629,"data":"15:20:41    tabpfn_3_5_cache n=10000 score=45.3s (45.32s/10k) gpu=9.0GB\n"}
+,{"stream_name":"stdout","time":5848.734982459,"data":"15:24:26    tabpfn_3_5_cache n=50000 score=224.5s (44.90s/10k) gpu=9.7GB\n"}
+,{"stream_name":"stdout","time":7864.104420425,"data":"15:58:01    tabpfn_2_5 n=1000 score=1012.2s (10121.95s/10k) gpu=5.2GB\n"}
+,{"stream_name":"stdout","time":7864.10448253,"data":"15:58:01    tabpfn_2_5 n=10000 skipped (est 10122s)\n"}
+,{"stream_name":"stdout","time":7864.104490094,"data":"15:58:01    tabpfn_2_5 n=50000 skipped (est 50610s)\n"}
+,{"stream_name":"stderr","time":7873.794358927,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":7873.794402003,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":7874.050712326,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":7874.050758524,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":7875.304133727,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":7876.244932881,"data":"[NbConvertApp] Writing 367158 bytes to __results__.html\n"}
+]

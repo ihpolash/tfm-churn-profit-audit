@@ -1,0 +1,34 @@
+{
+ "dataset": "ecommerce",
+ "n": 5074,
+ "n_feat": 18,
+ "churn_rate": 0.165746945210879,
+ "cols": [
+  "Tenure",
+  "PreferredLoginDevice",
+  "CityTier",
+  "WarehouseToHome",
+  "PreferredPaymentMode",
+  "Gender",
+  "HourSpendOnApp",
+  "NumberOfDeviceRegistered",
+  "PreferedOrderCat",
+  "SatisfactionScore",
+  "MaritalStatus",
+  "NumberOfAddress",
+  "Complain",
+  "OrderAmountHikeFromlastYear",
+  "CouponUsed",
+  "OrderCount",
+  "DaySinceLastOrder",
+  "CashbackAmount"
+ ],
+ "cat_idx": [
+  1,
+  4,
+  5,
+  8,
+  10
+ ],
+ "n_dup_removed": 556
+}

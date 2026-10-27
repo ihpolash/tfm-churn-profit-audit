@@ -1,0 +1,222 @@
+[
+ {
+  "dataset": "iranian",
+  "model": "tabicl_v2",
+  "seed": 0,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 5.111768007278442,
+  "pred_s_per_10k": 30.106784592212087,
+  "status": "ok",
+  "gpu_peak_gb": 0.699846656
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5",
+  "seed": 0,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 4.507532358169556,
+  "pred_s_per_10k": 95.00208874823342,
+  "status": "ok",
+  "gpu_peak_gb": 2.618800128
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5_fast",
+  "seed": 0,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 1.9249250888824463,
+  "pred_s_per_10k": 9.583944166210335,
+  "status": "ok",
+  "gpu_peak_gb": 1.222685696
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_2_5",
+  "seed": 0,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 2.5206551551818848,
+  "pred_s_per_10k": 23.420310356247594,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabicl_v2",
+  "seed": 1,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.4625403881072998,
+  "pred_s_per_10k": 8.401224310968963,
+  "status": "ok",
+  "gpu_peak_gb": 0.699715584
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5",
+  "seed": 1,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.5943868160247803,
+  "pred_s_per_10k": 26.59678039416461,
+  "status": "ok",
+  "gpu_peak_gb": 2.618800128
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5_fast",
+  "seed": 1,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.2120189666748047,
+  "pred_s_per_10k": 8.050253693486603,
+  "status": "ok",
+  "gpu_peak_gb": 1.222685696
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_2_5",
+  "seed": 1,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.20431065559387207,
+  "pred_s_per_10k": 22.069669105637242,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabicl_v2",
+  "seed": 2,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.4770934581756592,
+  "pred_s_per_10k": 8.515841524365921,
+  "status": "ok",
+  "gpu_peak_gb": 0.699715584
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5",
+  "seed": 2,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.5770201683044434,
+  "pred_s_per_10k": 27.10237469471676,
+  "status": "ok",
+  "gpu_peak_gb": 2.618800128
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5_fast",
+  "seed": 2,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.21283674240112305,
+  "pred_s_per_10k": 8.016308428535998,
+  "status": "ok",
+  "gpu_peak_gb": 1.222685696
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_2_5",
+  "seed": 2,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.3754863739013672,
+  "pred_s_per_10k": 22.434269038724228,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabicl_v2",
+  "seed": 3,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.5046749114990234,
+  "pred_s_per_10k": 8.60910180588843,
+  "status": "ok",
+  "gpu_peak_gb": 0.699715584
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5",
+  "seed": 3,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.605172872543335,
+  "pred_s_per_10k": 27.685795031802755,
+  "status": "ok",
+  "gpu_peak_gb": 2.618800128
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5_fast",
+  "seed": 3,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.21197032928466797,
+  "pred_s_per_10k": 8.114295106538584,
+  "status": "ok",
+  "gpu_peak_gb": 1.222685696
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_2_5",
+  "seed": 3,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.22225737571716309,
+  "pred_s_per_10k": 22.60909953587492,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabicl_v2",
+  "seed": 4,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.47701334953308105,
+  "pred_s_per_10k": 8.763658328795097,
+  "status": "ok",
+  "gpu_peak_gb": 0.699715584
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5",
+  "seed": 4,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.5777816772460938,
+  "pred_s_per_10k": 28.028139765833465,
+  "status": "ok",
+  "gpu_peak_gb": 2.618800128
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_3_5_fast",
+  "seed": 4,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.21481537818908691,
+  "pred_s_per_10k": 8.368991630178101,
+  "status": "ok",
+  "gpu_peak_gb": 1.222685696
+ },
+ {
+  "dataset": "iranian",
+  "model": "tabpfn_2_5",
+  "seed": 4,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 0.21403932571411133,
+  "pred_s_per_10k": 22.88017474429708,
+  "status": "ok",
+  "gpu_peak_gb": 0.38906624
+ }
+]

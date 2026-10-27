@@ -1,0 +1,519 @@
+\documentclass[runningheads]{llncs}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,multirow,array}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xspace}
+\input{tables/numbers.tex}
+\makeatletter\newcommand{\tabin}[1]{\@@input #1 }\makeatother
+
+\setlength{\emergencystretch}{2.5em}
+\newcommand{\tfm}{TFM\xspace}
+\newcommand{\tfms}{TFMs\xspace}
+
+\begin{document}
+
+\title{Do Tabular Foundation Models Pay Off for Churn?\\
+A Profit-, Calibration- and Tuning-Aware Re-evaluation}
+\titlerunning{Do Tabular Foundation Models Pay Off for Churn?}
+
+\author{Ismail Hossain Polas}
+\authorrunning{I.~H.~Polas}
+\institute{Jahangirnagar University\\ \email{ismailhossainpolash@gmail.com}}
+
+\maketitle
+
+\begin{abstract}
+Tabular foundation models (\tfms) predict from a labelled context in a single forward pass. A recent benchmark
+reported that they decisively outperform tree ensembles for customer churn, but it compared them with untuned
+gradient-boosted trees (GBDTs) and scored only ranking metrics, while a retention campaign is judged in money. We
+re-evaluate TabPFN-2.5, TabPFN-3.5, TabPFN-3.5-Fast and TabICL v2 against Optuna-tuned LightGBM, XGBoost and CatBoost
+on five public telecom churn datasets. Every model is scored on expected maximum profit (EMP), e-Profits, calibration
+and scoring time, over five seeds with paired-bootstrap intervals. Only TabPFN-3.5 earns a significant EMP gain on
+more than one dataset (Orange \empPFNThreeOrangeAbs\%, Cell2Cell \empPFNThreeCellTwoCellAbs\%, Iranian
+\empPFNThreeIranianAbs\%), and it is never significantly worse. TabICL v2, the earlier benchmark's leader, is
+significant only on Iranian and underpredicts Orange churn by \citlICLOrangeAbs{} points on a \rateOrange\% base rate.
+Profit metrics reorder models mainly when they are statistically tied. A class-balanced context lowers TabPFN-3.5's
+Orange gain rather than raising it. On the earlier benchmark's headline dataset, tuning the baseline cuts TabICL v2's
+PR-AUC lead from \replICLDefaultAbs{} to \replICLTunedAbs{} points without closing it. Scoring cost is minor; the
+licence of TabPFN-3.5's weights, which forbids production use, is the binding constraint.
+\keywords{Customer churn \and Tabular foundation models \and Expected maximum profit \and Calibration \and Benchmarking}
+\end{abstract}
+
+\section{Introduction}
+
+Churn models exist to choose whom a retention campaign contacts. A model is useful to an operator to the extent that
+the customers it ranks highest are the ones worth an incentive, so the natural yardstick is campaign profit rather than
+classification accuracy. Verbraken et al.\ made this precise with the expected maximum profit (EMP) criterion
+\cite{verbraken2013emp}, and later work showed that selecting churn models by AUC instead of profit leaves money on the
+table \cite{verbeke2012newinsights,hoppner2020proftree,manzoor2025eprofits}.
+
+Tabular foundation models change what a churn model is. TabPFN \cite{hollmann2025tabpfn,priorlabs2025tabpfn25,priorlabs2026tabpfn35}
+and TabICL \cite{qu2025tabicl,qu2026tabiclv2} are pretrained on synthetic tables and predict a new customer by
+conditioning on the labelled training set as context, with no fitting and no hyperparameter search. On general
+benchmarks they now lead or match tuned GBDTs \cite{erickson2025tabarena,qu2026tabiclv2,priorlabs2026tabpfn35}. For
+churn specifically, Seyedzadeh and Karimi \cite{seyedzadeh2026churn} benchmarked six \tfms on nine Kaggle datasets.
+They concluded that \tfms ``collectively and decisively outperform'' classical, deep and tree-ensemble models, with
+TabICL v2 ahead of XGBoost by up to 9.23 PR-AUC points.
+
+That study was the first to bring \tfms to churn, and it leaves three questions open. Its XGBoost and random forest
+used library-default hyperparameters \cite[Sect.~3.2]{seyedzadeh2026churn}, so part of the reported gap may be a tuning
+gap. Its metrics were F1, ROC-AUC, PR-AUC and log loss; its financial estimate scaled the PR-AUC gap by a retention rate
+rather than evaluating a campaign. Finally, its own discussion reads TabICL v2's lead as ``operational \ldots\ rather
+than as a statistically decisive metric lead'' \cite[Sect.~4.2]{seyedzadeh2026churn}, which leaves the size of the lead
+unsettled.
+
+We re-evaluate the question with the baselines tuned and the decision made explicit. Four \tfms (TabPFN-2.5,
+TabPFN-3.5, TabPFN-3.5-Fast, TabICL v2) face Optuna-tuned LightGBM, XGBoost and CatBoost, an explainable boosting
+machine and logistic regression on five public telecom datasets, three of them from real operators. Every model is
+scored on ranking metrics, EMP, e-Profits, a fixed-threshold campaign policy, calibration and scoring time, over five
+seeded splits with paired-bootstrap intervals. Our findings:
+\begin{enumerate}
+\item \textbf{Only TabPFN-3.5 pays off consistently.} Against the best tuned GBDT its EMP gain is significant on
+  \nSigEMPPFNThree{} of 5 datasets and never negative beyond noise; TabICL v2 and TabPFN-2.5 are significant only on
+  Iranian. On the two fictional datasets, Telco and Maven, no \tfm differs significantly from the GBDTs
+  (Sect.~\ref{sec:rq1}).
+\item \textbf{Profit metrics reorder ties, not clear winners.} Where one model leads clearly (Orange, Cell2Cell), the
+  EMP winner equals the AUC winner in every seed; where models are within noise, the EMP winner differs in up to
+  \topEMPMaven{} of 5 seeds (Sect.~\ref{sec:rq2}).
+\item \textbf{Calibration matters for one model on one dataset.} Raw TabICL v2 underpredicts Orange churn by
+  \citlICLOrangeAbs{} points and loses \regICLOrangeRaw\% of attainable campaign profit at a fixed threshold; elsewhere
+  recalibration changes that loss by at most \maxRegretShiftNonOrange{} points (Sect.~\ref{sec:rq3}).
+\item \textbf{A balanced context does not help when the full training set fits.} It lowers TabPFN-3.5's Orange gain
+  from \ctxOrangePFNFullAbs\% to \ctxOrangePFNBalAbs\% (Sect.~\ref{sec:rq4}).
+\item \textbf{Tuning shrinks but does not erase the headline gap.} On the earlier benchmark's E-Commerce dataset,
+  TabICL v2's PR-AUC lead falls from \replICLDefaultAbs{} points over default XGBoost to \replICLTunedAbs{} over tuned
+  \replTuned{}, and remains significant (Sect.~\ref{sec:rq5}).
+\end{enumerate}
+We also report scoring throughput and licensing (Sect.~\ref{sec:rq6}), which together decide whether a gain can be
+deployed at all. The code, every per-split prediction and the table generator are released
+(Sect.~\ref{sec:availability}).
+
+\section{Related Work}
+
+\paragraph{Profit-aware churn evaluation.}
+Verbraken et al.\ defined EMP as the expected best campaign profit when the probability that a contacted churner
+accepts the offer is uncertain and Beta distributed \cite{verbraken2013emp}. Verbeke et al.\ used profit to compare
+churn classifiers in telecom \cite{verbeke2012newinsights}, and Höppner et al.\ optimised EMP directly when growing
+decision trees \cite{hoppner2020proftree}. Manzoor et al.\ proposed e-Profits, which replaces EMP's population-level
+customer value with a per-customer value derived from Kaplan--Meier retention, and found that it reranks six classical
+models on IBM Telco and Maven \cite{manzoor2025eprofits}. None of these studies includes a foundation model.
+
+\paragraph{Tabular foundation models.}
+TabPFN v2 \cite{hollmann2025tabpfn} established prior-fitted transformers for tables up to roughly 10k rows;
+TabPFN-2.5 extended this to 50k rows \cite{priorlabs2025tabpfn25}, and TabPFN-3 and 3.5 to a million rows with a cached
+context for fast scoring \cite{priorlabs2026tabpfn3,priorlabs2026tabpfn35}. TabICL separates column and row attention to
+scale in-context learning \cite{qu2025tabicl}; TabICL v2 reports beating a tuned and ensembled RealTabPFN-2.5 on TabArena
+and TALENT without tuning \cite{qu2026tabiclv2}. On TabArena, GBDTs remain strong on larger datasets while \tfms excel on
+small ones \cite{erickson2025tabarena}, and TabPrep shows that feature engineering, absent from most benchmarks,
+changes these comparisons \cite{tschalzev2026tabprep}. TabPFN's predictive probabilities are reported to be well
+calibrated out of the box \cite{tanna2025tabtune}, while ensembling \tfms can damage calibration
+\cite{tanna2026ensembling}.
+
+\paragraph{\tfms in business prediction.}
+The closest analogue to our study is the credit-risk review of Baesens et al.\ \cite{baesens2026creditrisk}. Across
+14 probability-of-default datasets TabPFN-3 ranks first, but its margin over the strongest GBDT is narrow and ``driven
+by the latest TabPFN and TabICL generations rather than by the model class as a whole''. TabPFN-3 also underpredicts
+the mean default rate. Tanna et al.\ found that, under heavy imbalance, building a class-balanced context adds 3 to 4 AUC
+points over uniform sampling for subsampled contexts of 1k to 50k rows \cite{tanna2026resampling}; V4FinBench reports
+a similar benefit of imbalance-aware context construction for bankruptcy prediction \cite{kostrzewa2026v4finbench}.
+For churn, the only \tfm benchmark is \cite{seyedzadeh2026churn}. Table~\ref{tab:gap} sets the closest studies against
+ours.
+
+\begin{table}[t]
+\caption{Closest prior studies. Tuned: baselines hyperparameter-tuned. Calibration: analysed beyond reporting log
+loss. Tests: uncertainty or significance reported for differences between models.}
+\label{tab:gap}
+\centering\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+Study & Domain & \tfms & Tuned & Profit metric & Calibration & Tests \\
+\midrule
+Manzoor et al.\ \cite{manzoor2025eprofits} & churn & no & yes & e-Profits, EMP & no & yes \\
+Baesens et al.\ \cite{baesens2026creditrisk} & credit risk & yes & yes & no & yes & yes \\
+Seyedzadeh \& Karimi \cite{seyedzadeh2026churn} & churn & yes & no & no & log loss only & no \\
+\midrule
+This work & churn & yes & yes & EMP, e-Profits, policy & yes & yes \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\section{Benchmark Design}
+
+\subsection{Datasets}
+Table~\ref{tab:data} lists the six datasets. Five form the main benchmark. Cell2Cell, Iranian and Orange come from
+real operators: Cell2Cell from a US wireless carrier \cite{cell2cell}, Iranian from an Iranian operator through the UCI
+repository \cite{iranian}, and Orange from the KDD Cup 2009 churn task \cite{guyon2009kddcup}, which we load from
+OpenML (dataset 1112). IBM Telco \cite{telco} and Maven \cite{maven} are fictional teaching datasets; we keep them
+because prior churn studies use them, including both \cite{manzoor2025eprofits} and \cite{seyedzadeh2026churn}, and
+because a gap between real and fictional data would itself be informative. E-Commerce \cite{ecommerce}, the dataset on
+which \cite{seyedzadeh2026churn} reported its largest gain, serves only as a replication check (Sect.~\ref{sec:rq5}) and
+is excluded from all cross-dataset summaries.
+
+\begin{table}[t]
+\caption{Datasets after preprocessing. Dup.: exact duplicate feature rows removed. e-Prof.: tenure and monthly revenue
+available for e-Profits.}
+\label{tab:data}
+\centering\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrrcc@{}}
+\toprule
+Dataset & Source & Rows & Feat. & Churn \% & Dup. & e-Prof. & Role \\
+\midrule
+\tabin{tables/datasets.tex}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+All models share one preprocessing pipeline. Categorical columns are ordinal-encoded with missing values left as
+missing, and columns that are more than 99\% missing or constant are dropped. For Maven we drop customers whose status
+is ``Joined'', whose outcome is not yet observed, and the two columns that record the churn reason after the fact. We
+remove exact duplicate feature rows, keeping the first: an in-context learner can otherwise look a test customer up in
+its own context. This removed \dupTelco{} rows (\dupPctTelco\%) from Telco, \dupIranian{} (\dupPctIranian\%) from
+Iranian and \dupECommerce{} (\dupPctECommerce\%) from E-Commerce; the other datasets had none.
+
+\subsection{Models}
+\textbf{Foundation models.} TabPFN-2.5, TabPFN-3.5 and TabPFN-3.5-Fast run through the \texttt{tabpfn} package (v9.2.0) with default settings and the training-size guardrail disabled; TabICL v2 runs through \texttt{tabicl} (v2.2.0, checkpoint of 2026-02-12). Each
+receives the full training split as its context, at the natural churn rate. None is tuned, which is how these models
+are meant to be used.
+
+\textbf{Tuned baselines.} LightGBM \cite{ke2017lightgbm} and XGBoost \cite{chen2016xgboost} are tuned with 40 trials
+of Optuna's TPE sampler \cite{akiba2019optuna}, and CatBoost \cite{prokhorenkova2018catboost} with 25, each under a
+20-minute cap. Trials are scored by validation AUC on an inner 80/20 split of the training data with early stopping;
+the best configuration is then refit on the whole training split with the selected number of trees. We also report an
+explainable boosting machine (EBM) \cite{nori2019interpretml} and logistic regression with one-hot encoding and median
+imputation, both at defaults.
+
+\subsection{Protocol}
+For each dataset and each of five seeds we draw a stratified 60/20/20 split into training, calibration and test sets.
+All models see identical splits, which the analysis verifies by comparing test indices across runs. Models are fitted
+(or given context) on the training split. The calibration split is used only to fit post-hoc recalibration, and every
+reported metric is computed on the test split. Uncertainty for a difference between two models is a paired percentile
+bootstrap: we resample test customers 500 times per seed, recompute the metric for both models on each resample, and
+pool the 2,500 differences across seeds. We call a difference significant when its 95\% interval excludes zero. Each
+\tfm is compared with the best tuned GBDT for that dataset and metric, chosen by mean over seeds, which favours the
+baseline. GBDTs ran on Kaggle CPU sessions and \tfms on a single NVIDIA T4 (16\,GB).
+
+\subsection{Metrics}
+\textbf{Ranking.} ROC-AUC, PR-AUC and lift in the top decile.
+
+\textbf{EMP.} For a campaign that contacts the fraction of customers with the highest scores, a contacted churner
+accepts the offer with probability $\gamma$ and is then worth $\mathrm{CLV}-\delta-\phi$; a churner who declines costs
+the contact cost $\phi$; a contacted non-churner takes the incentive and costs $\delta+\phi$. EMP is the expected
+profit per customer at the profit-maximising cutoff, averaged over $\gamma\sim\mathrm{Beta}(6,14)$
+\cite{verbraken2013emp}. We use the standard parameters $\mathrm{CLV}=200$, $\delta=10$ and $\phi=1$, and integrate over
+$\gamma$ on a 200-point grid. Because EMP chooses the best cutoff for each model, it depends only on the ranking and
+cannot reward calibration.
+
+\textbf{e-Profits.} Following \cite{manzoor2025eprofits}, each customer's value is
+$\mathrm{CLV}_i = R_i M/(1-\min(r_i,0.995))$, with monthly revenue $R_i$, margin $M=0.3$, and one-month retention
+$r_i = S(T_i+1)/S(T_i)$ from a Kaplan--Meier curve $S$ \cite{kaplan1958nonparametric} fitted on the training split at
+the customer's tenure $T_i$. The offer costs $0.1\,\mathrm{CLV}_i$ and the contact $\max(5, 0.3\cdot\text{offer})$. A
+contacted churner yields $\mathrm{CLV}_i$ minus both costs; a contacted non-churner yields minus both costs. We report
+e-Profits when contacting customers with predicted probability at least 0.5, as in \cite{manzoor2025eprofits}, and when
+contacting the top 20\%. It is defined only where tenure and revenue exist (Table~\ref{tab:data}).
+
+\textbf{Campaign policy and calibration.} An operator who acts on probabilities contacts customer $i$ when its expected
+profit under the EMP cost model is positive at the mean acceptance rate $\bar\gamma=0.3$. Unlike EMP, this policy uses
+the probability itself, so miscalibration costs money. We report its regret: the profit lost relative to the best
+cutoff on the same ranking, as a share of that best profit, as the median over a $3\times3$ grid of
+$\mathrm{CLV}\in\{100,200,500\}$ and $\delta\in\{5,10,20\}$. Calibration is measured by expected calibration error
+(ECE, 15 equal-width bins), Brier score, and calibration-in-the-large: the observed churn rate minus the mean predicted
+probability, in percentage points, where a positive value means churn is underpredicted. Each model is evaluated raw and
+after two recalibrations fitted on the calibration split: isotonic regression \cite{zadrozny2002transforming} and Platt
+scaling \cite{platt1999probabilistic}.
+
+\section{Results}
+
+\subsection{Do foundation models beat tuned GBDTs?}\label{sec:rq1}
+
+TabPFN-3.5 is the only \tfm with a significant EMP gain on more than one dataset (Table~\ref{tab:boot}). Against the
+best tuned GBDT it gains \empPFNThreeOrangeAbs\% on Orange, \empPFNThreeCellTwoCellAbs\% on Cell2Cell and
+\empPFNThreeIranianAbs\% on Iranian, and it is never significantly worse. TabICL v2 and TabPFN-2.5 are significant only
+on Iranian, where every boosted and foundation model scores above 0.98 AUC (Appendix, Table~\ref{tab:auc}) and the
+remaining errors are few.
+TabPFN-3.5-Fast sits between its parent and TabPFN-2.5.
+
+The Orange result carries the largest effect and the weakest certainty. The \empPFNThreeOrangeAbs\% gain corresponds to
+an EMP difference whose 95\% interval starts at \empLoPFNThreeOrange{} per customer, just above zero, because Orange
+has only \rateOrange\% churners. We therefore read it as evidence of a real gain of uncertain size.
+
+On the two fictional datasets the picture is flat. No \tfm differs significantly from the best GBDT on Telco or Maven,
+on any metric; TabPFN-3.5's EMP gains there are \empPFNThreeTelcoAbs\% and \empPFNThreeMavenAbs\%. The version also matters
+more than the family: TabPFN-2.5 and TabPFN-3.5 share an architecture lineage, yet only the latter separates from the
+GBDTs on Orange and Cell2Cell. This matches the pattern Baesens et al.\ report for credit risk
+\cite{baesens2026creditrisk}.
+
+\begin{table}[t]
+\caption{Mean PR-AUC and EMP (profit per customer, CLV units) over five seeds; best per column in bold.}
+\label{tab:main}
+\centering\scriptsize\setlength{\tabcolsep}{3.2pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccccc@{}}
+\toprule
+& \multicolumn{2}{c}{Telco} & \multicolumn{2}{c}{Maven} & \multicolumn{2}{c}{Cell2Cell} & \multicolumn{2}{c}{Iranian} & \multicolumn{2}{c}{Orange} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}\cmidrule(l){10-11}
+Model & PR-AUC & EMP & PR-AUC & EMP & PR-AUC & EMP & PR-AUC & EMP & PR-AUC & EMP \\
+\midrule
+\tabin{tables/main_results.tex}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[t]
+\caption{Each \tfm minus the best tuned GBDT: PR-AUC difference in points ($\times100$) and EMP difference relative to
+the GBDT. Bold with $\ast$: the 95\% paired-bootstrap interval excludes zero. The reference is the best tuned GBDT
+per dataset and metric, shown as PR-AUC / EMP reference (LGBM: LightGBM, XGB: XGBoost, CatB: CatBoost).}
+\label{tab:boot}
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccccc@{}}
+\toprule
+& \multicolumn{2}{c}{Telco} & \multicolumn{2}{c}{Maven} & \multicolumn{2}{c}{Cell2Cell} & \multicolumn{2}{c}{Iranian} & \multicolumn{2}{c}{Orange} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}\cmidrule(l){10-11}
+& \tabin{tables/bootstrap_refs.tex}
+\tfm & $\Delta$PR & $\Delta$EMP & $\Delta$PR & $\Delta$EMP & $\Delta$PR & $\Delta$EMP & $\Delta$PR & $\Delta$EMP & $\Delta$PR & $\Delta$EMP \\
+\midrule
+\tabin{tables/bootstrap.tex}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Do profit metrics change which model wins?}\label{sec:rq2}
+
+They change it when models are tied and leave it alone otherwise (Table~\ref{tab:rank}). On Orange and Cell2Cell,
+where TabPFN-3.5 leads clearly, the EMP winner is the AUC winner in all five seeds, and Kendall's $\tau$ between the two
+rankings is \tauEMPOrange{} and \tauEMPCellTwoCell. Telco and Maven behave differently: their top models are within noise
+of each other, and the EMP winner differs from the AUC winner in \topEMPTelco{} and \topEMPMaven{} of 5 seeds.
+
+e-Profits at a 0.5 threshold disagrees with AUC much more ($\tau=\tauEPthrMaven$ on Maven). This is expected from its
+construction rather than evidence of a better ranking: at a fixed threshold the metric also rewards a model whose
+probabilities happen to sit on the right side of 0.5, so it mixes ranking with calibration. The reranking reported for
+e-Profits on Telco and Maven \cite{manzoor2025eprofits} is therefore reproduced here, and our bootstrap intervals
+locate it among models whose ranking metrics are statistically indistinguishable.
+
+\begin{table}[t]
+\caption{Agreement between the AUC ranking of all nine models and profit-based rankings: mean Kendall $\tau$ over
+seeds, and seeds in which the top model changes. e-Profits needs tenure and revenue.}
+\label{tab:rank}
+\centering\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+& \multicolumn{2}{c}{EMP} & \multicolumn{2}{c}{e-Profits, top 20\%} & \multicolumn{2}{c}{e-Profits, $p\ge0.5$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(l){6-7}
+Dataset & $\tau$ & top-1 changed & $\tau$ & top-1 changed & $\tau$ & top-1 changed \\
+\midrule
+\tabin{tables/rank_agreement.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Does calibration cost money?}\label{sec:rq3}
+
+Mostly it does not. Outside Orange, the fixed-threshold policy loses at most \maxRawRegretNonOrange\% of attainable
+profit for any model without recalibration, and isotonic or Platt scaling changes that loss by at most
+\maxRegretShiftNonOrange{} points (Table~\ref{tab:cal}).
+
+Orange is the exception, and one model drives it. Raw TabICL v2 predicts \citlICLOrangeAbs{} percentage points too
+little churn on a base rate of \rateOrange\%, and the policy built on those probabilities loses \regICLOrangeRaw\% of
+attainable profit. Isotonic regression cuts the loss to \regICLOrangeIso\% and Platt scaling to \regICLOrangePlatt\%.
+TabICL v2 also underpredicts on Cell2Cell (by \citlICLCellTwoCellAbs{} points), as does TabPFN-2.5
+(\citlPFNTwoCellTwoCellAbs{}). TabPFN-3.5's calibration-in-the-large stays within $\pm$\maxAbsCitlPFNThree{} points on
+every dataset, so it is the only \tfm here that can be thresholded without recalibration. The tuned GBDTs are close to
+zero as well, consistent with their fitting to the observed base rate.
+
+\begin{table}[t]
+\caption{Calibration. CITL: observed minus mean predicted churn rate (points; positive = underprediction). Regret:
+share of best-cutoff profit lost by the fixed-threshold policy (median over the cost grid), raw / isotonic / Platt.
+The first row per dataset is the best tuned GBDT.}
+\label{tab:cal}
+\centering\scriptsize
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+& & & \multicolumn{2}{c}{ECE} & \multicolumn{3}{c}{Policy regret (\%)} \\
+\cmidrule(lr){4-5}\cmidrule(l){6-8}
+Dataset & Model & CITL & raw & iso. & raw & iso. & Platt \\
+\midrule
+\tabin{tables/calibration.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Does a balanced context help?}\label{sec:rq4}
+
+Under heavy imbalance, a balanced context has been reported to add 3 to 4 AUC points for \tfms
+\cite{tanna2026resampling}. If that held here, our full-context runs would understate the \tfms on Orange. We kept every
+churner in the training split and sampled one or two non-churners per churner, for TabPFN-3.5 and TabICL v2 on Orange
+and Cell2Cell, on the same splits and seeds.
+
+Balancing hurt (Table~\ref{tab:ctx}). TabPFN-3.5's EMP gain on Orange fell from \ctxOrangePFNFullAbs\% with the full
+context to \ctxOrangePFNHalfAbs\% at 1:2 and \ctxOrangePFNBalAbs\% at 1:1, and neither of the latter is significant.
+TabICL v2 gained nothing on either dataset. Balancing also inflated raw predicted churn: on Orange the 1:1 context
+overpredicts the churn rate by \ctxCitlOrangeAbs{} points, an error that isotonic recalibration on the calibration
+split removes. The difference from \cite{tanna2026resampling} is the regime: there, contexts were subsampled to at most 50k
+rows from larger data, so balancing chose which customers to keep. Here the whole training split fits, and
+undersampling only discards non-churners.
+
+\begin{table}[t]
+\caption{Context construction. Full: the whole training split at its natural churn rate. 1:2 and 1:1: all churners
+plus two or one sampled non-churners per churner. $\Delta$EMP is relative to the best tuned GBDT (bold $\ast$:
+significant). CITL in points, raw.}
+\label{tab:ctx}
+\centering\scriptsize
+\begin{tabular}{@{}lllrrrrr@{}}
+\toprule
+Dataset & Model & Context & AUC & PR-AUC & EMP & $\Delta$EMP & CITL \\
+\midrule
+\tabin{tables/context.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Does the earlier headline survive tuning?}\label{sec:rq5}
+
+We reran our protocol on E-Commerce, where \cite{seyedzadeh2026churn} reported TabICL v2 9.23 PR-AUC points ahead of
+XGBoost, adding a library-default XGBoost to reproduce their baseline (Table~\ref{tab:repl}). The direction survives.
+TabICL v2 leads default XGBoost by \replICLDefaultAbs{} points and the best tuned GBDT, \replTuned, by
+\replICLTunedAbs{} points, both significant, and its EMP gain is \replICLEMPAbs\%. Tuning raised the GBDT's PR-AUC
+from \replDefaultPR{} to \replTunedPR{} and so removed about a third of the gap. TabPFN-3.5 leads by more
+(\replPFNThreeTunedAbs{} points over tuned \replTuned; EMP gain \replPFNThreeEMPAbs\%). Our protocol differs from theirs (a 60/20/20 holdout over five seeds against
+five-fold cross-validation), so we compare default and tuned baselines within our own runs rather than with their
+numbers. On this dataset, then, \tfms win clearly. The origin of E-Commerce is not documented, so it cannot tell us
+whether the effect is specific to real or synthetic data.
+
+\begin{table}[t]
+\caption{Replication on E-Commerce. PR-AUC mean (sd) over five seeds; $\Delta$ in PR-AUC points versus default XGBoost
+and versus the best tuned GBDT, and EMP relative to the best tuned GBDT (bold $\ast$: significant).}
+\label{tab:repl}
+\centering\scriptsize
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Model & PR-AUC & EMP & $\Delta$PR vs default & $\Delta$PR vs tuned & $\Delta$EMP \\
+\midrule
+\tabin{tables/replication.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Scoring cost and licensing}\label{sec:rq6}\label{sec:cost}
+
+An in-context learner re-reads its context for every scoring call unless the context is cached, so its cost depends on
+how scoring is run. We timed scoring of 1k, 10k and 50k customers resampled from the test split, after a warm-up call,
+on one T4 (Table~\ref{tab:time}). With the context cached, TabPFN-3.5 scores 10k Orange customers in
+\timePFNCacheOrange{}\,s against a \ctxOrange-row context, and TabICL v2 with its key-value cache in
+\timeICLCacheOrange{}\,s, against \timeLGBMOrange{}\,s for a 1,000-tree LightGBM on CPU. A monthly scoring run of a
+million customers therefore costs about \hoursPFNCacheMillion{} T4-hours with cached TabPFN-3.5. That is slow next to
+a GBDT but small next to the per-customer profit differences in Table~\ref{tab:boot}. Without caching, small batches
+are very expensive (\timePFNUncachedSmallOrange\,s per 10k for TabPFN-3.5 at 1k rows on Orange), and TabPFN-2.5 was
+impractical at 30k-row contexts.
+
+Licensing constrains deployment more than compute does. The TabPFN-3.5 weights are released for research and
+evaluation, but ``the models, their derivatives, and their outputs cannot be used for commercial or production
+purposes'', including ``using model outputs as inputs to internal commercial decision-making''
+\cite[Sect.~4]{priorlabs2026tabpfn35}\cite{tabpfn35license}; production use requires a commercial licence. TabICL v2's
+weights are BSD-3 licensed. An operator choosing between them therefore faces a trade-off our benchmark makes concrete:
+the model that pays off consistently needs a commercial agreement, and the openly licensed one is not reliably better
+than a tuned GBDT on these datasets.
+
+\begin{table}[t]
+\caption{Seconds to score 10k customers on one T4 (LightGBM on CPU), best of 10k and 50k batches. $\dagger$: only the
+1k batch was run because larger ones exceeded our time budget; per-customer time falls with batch size, so this is an
+upper bound. Context: training split (\ctxTelco{} / \ctxCellTwoCell{} / \ctxOrange{} rows).}
+\label{tab:time}
+\centering\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Model & Telco & Cell2Cell & Orange \\
+\midrule
+\tabin{tables/timing.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+
+The results support a narrower statement than ``foundation models outperform trees for churn''. Gains are real on some
+datasets and absent on others, and three factors explain most of the variation we see. The model version matters more
+than the model class: TabPFN-3.5 separates from tuned GBDTs where TabPFN-2.5 does not. Baseline tuning removes part of
+any measured lead, about a third of it on E-Commerce. And the datasets most used in churn research, Telco and Maven,
+are the ones on which no model can be told apart, so studies built on them can neither confirm nor refute a \tfm
+advantage.
+
+For a practitioner this suggests an order of operations. Tune the GBDT first; it is the baseline that matters, and
+default settings overstate what a \tfm adds. If TabPFN-3.5 still leads on held-out profit and the licence permits it,
+use it with a cached context. If only openly licensed models are possible, test TabICL v2 on one's own data and
+recalibrate it before thresholding. A balanced context is not a free improvement when the training set fits.
+
+The finding most likely to change with more evidence is the size of the Orange gain. Its interval is wide, and a
+stronger GBDT pipeline with feature engineering \cite{tschalzev2026tabprep} or a larger tuning budget
+\cite{erickson2025tabarena} could narrow it. The finding least likely to change is the calibration pattern, which is
+consistent across seeds and matches the underprediction reported for credit risk \cite{baesens2026creditrisk}.
+
+\section{Limitations}
+
+Our GBDT tuning is lighter than benchmark practice: 25 to 40 TPE trials, against 200 configurations with post-hoc
+ensembling in TabArena \cite{erickson2025tabarena}. Because heavier tuning can only help the baselines, our \tfm gains
+are, if anything, overstated. We did no feature engineering, which recent work shows can shift model comparisons
+\cite{tschalzev2026tabprep}.
+
+The evidence rests on three real-operator datasets, and the largest effect, on Orange, has an interval close to zero.
+We cannot claim that TabPFN-3.5's gain generalises to churn in other industries or to operators with millions of
+customers, where the context would no longer hold the full training set. The cost model behind EMP and the policy uses
+the standard population-level parameters \cite{verbraken2013emp}; e-Profits gives a customer-level alternative on three
+datasets only.
+
+We used one splitting protocol (60/20/20 holdout, five seeds) rather than repeated cross-validation, one GPU type, and
+the default inference settings of each \tfm. We did not evaluate the API-only TabPFN-3.5-Plus and -Thinking variants,
+or the other \tfms covered by \cite{seyedzadeh2026churn}.
+
+\section{Conclusion}
+
+Measured with tuned baselines and in money, tabular foundation models pay off for churn selectively. TabPFN-3.5
+improves campaign profit significantly on three of five telecom datasets and never loses beyond noise, but its weights
+cannot be used in production without a commercial licence. TabICL v2 and TabPFN-2.5 are rarely distinguishable from a
+tuned GBDT, and TabICL v2 needs recalibration before its probabilities can drive a campaign. Profit metrics confirm
+clear winners and reshuffle ties. We release the pipeline and every per-split prediction so that these conclusions can
+be re-checked as models and licences change.
+
+\section*{Data and Code Availability}\label{sec:availability}
+\begin{sloppypar}
+Code and results are at \url{https://github.com/ihpolash/tfm-churn-profit-audit} [TK: version DOI]. The repository
+contains the prediction and analysis code as scripts and as notebooks, the Kaggle kernel definitions that ran them, the
+per-split predictions and split indices of all \nRuns{} runs, the analysis outputs, and the generator and audit for every
+table and number in this paper. The datasets are public (Table~\ref{tab:data}) but are not redistributed, because
+several are licensed for non-commercial or attributed use only. The labels needed to recompute metrics from the
+predictions are regenerated from the original sources by the released code.
+\end{sloppypar}
+
+\section*{Declaration on the Use of Generative AI}
+The author used an AI assistant (Claude, Anthropic) for implementation and execution of the experiment code, for
+literature search and reference checking, for table generation, and for drafting and editing this manuscript. The
+research question was chosen by the author; the benchmark design, evaluation protocol and interpretation of the
+results were developed in iterative discussion with the assistant, and every design decision and conclusion was
+reviewed and approved by the author. All numerical results were produced by the released code. Every table and in-text
+number is generated by a released script from the released analysis outputs, which are computed from the released
+per-split predictions, and an audit notebook re-derives them before submission. Every reference was checked against its primary source or an authoritative
+index. The author takes full responsibility for all content of this paper, irrespective of how it was drafted.
+
+\bibliographystyle{splncs04}
+\bibliography{references}
+
+\appendix
+\section{Additional Results}
+
+\begin{table}[h]
+\caption{Mean ROC-AUC over five seeds; best per column in bold.}
+\label{tab:auc}
+\centering\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Model & Telco & Maven & Cell2Cell & Iranian & Orange \\
+\midrule
+\tabin{tables/auc_results.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
