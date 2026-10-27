@@ -1,5 +1,7 @@
 # Do Tabular Foundation Models Pay Off for Churn?
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23696051.svg)](https://doi.org/10.5281/zenodo.23696051)
+
 Code, per-split predictions and paper source for **"Do Tabular Foundation Models Pay Off for Churn? A Profit-,
 Calibration- and Tuning-Aware Re-evaluation"** (Ismail Hossain Polas, Jahangirnagar University). The paper PDF is
 [`paper/main.pdf`](paper/main.pdf); arXiv link to follow.
