@@ -1,0 +1,222 @@
+[
+ {
+  "dataset": "telco",
+  "model": "tabicl_v2",
+  "seed": 5,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 4.685906410217285,
+  "pred_s_per_10k": 18.98051159114688,
+  "status": "ok",
+  "gpu_peak_gb": 1.828402176
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5",
+  "seed": 5,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 4.776059627532959,
+  "pred_s_per_10k": 60.59209590805675,
+  "status": "ok",
+  "gpu_peak_gb": 4.026628608
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5_fast",
+  "seed": 5,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 4.2924535274505615,
+  "pred_s_per_10k": 10.462816403135074,
+  "status": "ok",
+  "gpu_peak_gb": 2.857391616
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_2_5",
+  "seed": 5,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 2.3138644695281982,
+  "pred_s_per_10k": 33.44952932517074,
+  "status": "ok",
+  "gpu_peak_gb": 0.388148736
+ },
+ {
+  "dataset": "telco",
+  "model": "tabicl_v2",
+  "seed": 6,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.639920711517334,
+  "pred_s_per_10k": 10.564356170153296,
+  "status": "ok",
+  "gpu_peak_gb": 1.82947328
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5",
+  "seed": 6,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.6501052379608154,
+  "pred_s_per_10k": 34.869648064144336,
+  "status": "ok",
+  "gpu_peak_gb": 4.026484736
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5_fast",
+  "seed": 6,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.3161587715148926,
+  "pred_s_per_10k": 9.97578561688899,
+  "status": "ok",
+  "gpu_peak_gb": 2.855920128
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_2_5",
+  "seed": 6,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.3918123245239258,
+  "pred_s_per_10k": 34.04514352225304,
+  "status": "ok",
+  "gpu_peak_gb": 0.388148736
+ },
+ {
+  "dataset": "telco",
+  "model": "tabicl_v2",
+  "seed": 7,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.6281797885894775,
+  "pred_s_per_10k": 10.943242603331953,
+  "status": "ok",
+  "gpu_peak_gb": 1.82947328
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5",
+  "seed": 7,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.6363315582275391,
+  "pred_s_per_10k": 36.199339622263395,
+  "status": "ok",
+  "gpu_peak_gb": 4.026484736
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5_fast",
+  "seed": 7,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.2713632583618164,
+  "pred_s_per_10k": 10.434912409976413,
+  "status": "ok",
+  "gpu_peak_gb": 2.855920128
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_2_5",
+  "seed": 7,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.584928035736084,
+  "pred_s_per_10k": 35.39984265367615,
+  "status": "ok",
+  "gpu_peak_gb": 0.388148736
+ },
+ {
+  "dataset": "telco",
+  "model": "tabicl_v2",
+  "seed": 8,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.624039888381958,
+  "pred_s_per_10k": 11.221186592270866,
+  "status": "ok",
+  "gpu_peak_gb": 1.82947328
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5",
+  "seed": 8,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.6381258964538574,
+  "pred_s_per_10k": 37.305588215100265,
+  "status": "ok",
+  "gpu_peak_gb": 4.026484736
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5_fast",
+  "seed": 8,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.27173447608947754,
+  "pred_s_per_10k": 10.411451749508931,
+  "status": "ok",
+  "gpu_peak_gb": 2.855920128
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_2_5",
+  "seed": 8,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.4297301769256592,
+  "pred_s_per_10k": 34.97562946207944,
+  "status": "ok",
+  "gpu_peak_gb": 0.388148736
+ },
+ {
+  "dataset": "telco",
+  "model": "tabicl_v2",
+  "seed": 9,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.6298661231994629,
+  "pred_s_per_10k": 10.950706585401472,
+  "status": "ok",
+  "gpu_peak_gb": 1.82947328
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5",
+  "seed": 9,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.6275699138641357,
+  "pred_s_per_10k": 36.05298533089071,
+  "status": "ok",
+  "gpu_peak_gb": 4.026484736
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_3_5_fast",
+  "seed": 9,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.26392602920532227,
+  "pred_s_per_10k": 10.164859548455727,
+  "status": "ok",
+  "gpu_peak_gb": 2.855920128
+ },
+ {
+  "dataset": "telco",
+  "model": "tabpfn_2_5",
+  "seed": 9,
+  "n_train": 4201,
+  "n_test": 1401,
+  "fit_s": 0.36279821395874023,
+  "pred_s_per_10k": 34.69511068862817,
+  "status": "ok",
+  "gpu_peak_gb": 0.388148736
+ }
+]

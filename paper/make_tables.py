@@ -3,13 +3,13 @@
 Reads the released kernel outputs in results/kernels/; writes paper/tables/*.tex and
 paper/tables/numbers.tex (LaTeX macros used in the prose). Standard library only. Rerun after any re-analysis.
 """
-import csv, json, re, statistics as st
+import csv, json, os, re, shutil, statistics as st
 from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 K = ROOT / "results/kernels"
-A = K / "analysis"
+A = Path(os.environ.get("CHURN_ANALYSIS", K / "analysis"))  # override only for development
 TAB = Path(__file__).resolve().parent / "tables"
 TAB.mkdir(exist_ok=True)
 
@@ -21,7 +21,8 @@ DS_KEY = {"telco": "Telco", "maven": "Maven", "cell2cell": "CellTwoCell", "irani
 MODELS = ["lr", "ebm", "lgbm", "xgb", "catboost", "tabicl_v2", "tabpfn_2_5", "tabpfn_3_5", "tabpfn_3_5_fast"]
 M_NAME = {"lr": "Logistic regression", "ebm": "EBM", "lgbm": "LightGBM", "xgb": "XGBoost", "catboost": "CatBoost",
           "tabicl_v2": "TabICL v2", "tabpfn_2_5": "TabPFN-2.5", "tabpfn_3_5": "TabPFN-3.5",
-          "tabpfn_3_5_fast": "TabPFN-3.5-Fast", "xgb_default": "XGBoost (library default)"}
+          "tabpfn_3_5_fast": "TabPFN-3.5-Fast", "xgb_default": "XGBoost (library default)",
+          "lgbm_200": "LightGBM (200 trials)", "catboost_200": "CatBoost (200 trials)"}
 TFMS = ["tabicl_v2", "tabpfn_2_5", "tabpfn_3_5", "tabpfn_3_5_fast"]
 MACROS = {}
 
@@ -103,37 +104,70 @@ for m in MODELS:
     lines.append(f"{M_NAME[m]} & " + " & ".join(cells) + " \\\\")
 write("auc_results.tex", "\n".join(lines) + "\n")
 
-# ---------------------------------------------------------------- Table 3: TFM minus best tuned GBDT (bootstrap)
-def cell(ds, met, tfm, ref=None):
-    ref = ref or best_ref[(ds, met)]
-    r = boot[(ds, met, tfm, ref)]
-    if met == "emp":
-        txt = f"{float(r['rel_diff_pct']):+.1f}\\%"
-    else:
-        txt = f"{100 * float(r['diff_mean']):+.1f}"
-    return f"$\\mathbf{{{txt}}}^{{\\ast}}$" if sig(r) else f"${txt}$"
+# ---------------------------------------------------------------- Table 3: inference (split-aware)
+inf = {(r["dataset"], r["metric"], r["tfm"], r["ref_set"]): r for r in rows("inference.csv")}
+num = lambda r, k: float(r[k]) if r.get(k) not in (None, "") else float("nan")
+hier_sig = lambda r: num(r, "hier_lo") > 0 or num(r, "hier_hi") < 0
+holm_sig = lambda r: r.get("holm_p") not in (None, "") and num(r, "holm_p") < 0.05
 
 
+def cell(ds, met, tfm, refset="tuned"):
+    """Difference with markers: * Holm-adjusted p < 0.05 (primary family only); dagger: two-level interval excludes 0."""
+    r = inf[(ds, met, tfm, refset)]
+    txt = f"{num(r, 'rel_pct'):+.1f}\\%" if met == "emp" else f"{100 * num(r, 'mean_diff'):+.1f}"
+    mark = "^{\\ast}" if holm_sig(r) else ("^{\\dagger}" if hier_sig(r) else "")
+    return f"$\\mathbf{{{txt}}}{mark}$" if mark else f"${txt}$"
+
+
+def pfmt(p):
+    return "$<$0.001" if p < 0.001 else f"{p:.3f}"
+
+
+lines = []
+for ds in MAIN:
+    for i, tfm in enumerate(TFMS):
+        r = inf[(ds, "emp", tfm, "tuned")]
+        bold = (lambda x: f"\\textbf{{{x}}}") if holm_sig(r) else (lambda x: x)
+        lines.append(("\\multirow{4}{*}{" + DS_NAME[ds] + "}" if i == 0 else "")
+                     + f" & {M_NAME[tfm]} & ${num(r, 'mean_diff'):+.3f}$ & ${num(r, 'rel_pct'):+.1f}$ & "
+                     f"$[{num(r, 'hier_lo'):+.3f}, {num(r, 'hier_hi'):+.3f}]$ & {r['seeds_positive']}/{r['J']} & "
+                     f"{pfmt(num(r, 'nb_p'))} & {bold(pfmt(num(r, 'holm_p')))} \\\\")
+    if ds != MAIN[-1]:
+        lines.append("\\midrule")
+write("primary.tex", "\n".join(lines) + "\n")
+prim = [r for r in inf.values() if r.get("primary") == "True"]
+macro("nPrimary", str(len(prim)))
+macro("nHolmSig", str(sum(holm_sig(r) for r in prim)))
+macro("nSeeds", str(max(int(r["J"]) for r in prim)))
+macro("minHolm", pfmt(min(num(r, "holm_p") for r in prim)))
+best = min(prim, key=lambda r: num(r, "holm_p"))
+macro("minHolmCase", f"{M_NAME[best['tfm']]} on {DS_NAME[best['dataset']]}")
+for t, k in (("tabpfn_3_5", "PFNThree"), ("tabicl_v2", "ICL"), ("tabpfn_2_5", "PFNTwo"), ("tabpfn_3_5_fast", "PFNFast")):
+    rs = [inf[(ds, "emp", t, "tuned")] for ds in MAIN]
+    macro(f"nHierEMP{k}", str(sum(hier_sig(r) and num(r, "mean_diff") > 0 for r in rs)))
+    macro(f"nNegEMP{k}", str(sum(num(r, "hier_hi") < 0 for r in rs)))
+    macro(f"nAllSeeds{k}", str(sum(int(r["seeds_positive"]) == int(r["J"]) for r in rs)))
+for ds in MAIN:
+    for t, k in (("tabpfn_3_5", "PFNThree"), ("tabicl_v2", "ICL"), ("tabpfn_2_5", "PFNTwo")):
+        r = inf[(ds, "emp", t, "tuned")]
+        macro(f"emp{k}{DS_KEY[ds]}", f"{num(r, 'rel_pct'):+.1f}")
+        macro(f"empAbs{k}{DS_KEY[ds]}", f"{num(r, 'mean_diff'):+.3f}")
+        macro(f"empLo{k}{DS_KEY[ds]}", f"{num(r, 'hier_lo'):+.3f}")
+        macro(f"empHi{k}{DS_KEY[ds]}", f"{num(r, 'hier_hi'):+.3f}")
+        macro(f"nbp{k}{DS_KEY[ds]}", pfmt(num(r, "nb_p")))
+        macro(f"holm{k}{DS_KEY[ds]}", pfmt(num(r, "holm_p")))
+        macro(f"seedsPos{k}{DS_KEY[ds]}", f"{r['seeds_positive']}")
+
+# secondary matrix: PR-AUC (points) and EMP (%) differences, markers as above
 lines = []
 for tfm in TFMS:
     lines.append(f"{M_NAME[tfm]} & " + " & ".join(cell(ds, met, tfm) for ds in MAIN for met in ("prauc", "emp")) + " \\\\")
 SHORT = {"lgbm": "LGBM", "xgb": "XGB", "catboost": "CatB"}
-refs = " & ".join(f"\\multicolumn{{2}}{{c}}{{\\scriptsize vs.\\ {SHORT[best_ref[(ds, 'prauc')]]} / {SHORT[best_ref[(ds, 'emp')]]}"
-                  + "}" for ds in MAIN)
+refs = " & ".join(f"\\multicolumn{{2}}{{c}}{{\\scriptsize vs.\\ {SHORT[inf[(ds, 'prauc', 'tabpfn_3_5', 'tuned')]['ref']]} / "
+                  f"{SHORT[inf[(ds, 'emp', 'tabpfn_3_5', 'tuned')]['ref']]}" + "}" for ds in MAIN)
 write("bootstrap.tex", "\n".join(lines) + "\n")
 write("bootstrap_refs.tex", refs + " \\\\\n")
-n_sig = {t: sum(sig(boot[(ds, 'emp', t, best_ref[(ds, 'emp')])]) for ds in MAIN) for t in TFMS}
-n_neg = {t: sum(float(boot[(ds, 'emp', t, best_ref[(ds, 'emp')])]["ci_hi"]) < 0 for ds in MAIN) for t in TFMS}
-for t, k in (("tabpfn_3_5", "PFNThree"), ("tabicl_v2", "ICL"), ("tabpfn_2_5", "PFNTwo"), ("tabpfn_3_5_fast", "PFNFast")):
-    macro(f"nSigEMP{k}", str(n_sig[t]))
-    macro(f"nNegEMP{k}", str(n_neg[t]))
-for ds in MAIN:
-    for t, k in (("tabpfn_3_5", "PFNThree"), ("tabicl_v2", "ICL")):
-        r = boot[(ds, "emp", t, best_ref[(ds, "emp")])]
-        macro(f"emp{k}{DS_KEY[ds]}", f"{float(r['rel_diff_pct']):+.1f}")
-        macro(f"empLo{k}{DS_KEY[ds]}", f"{float(r['ci_lo']):+.3f}")
-    r = boot[(ds, "prauc", "tabpfn_3_5", best_ref[(ds, "prauc")])]
-    macro(f"prPFNThree{DS_KEY[ds]}", f"{100 * float(r['diff_mean']):+.1f}")
+best_ref = {(ds, met): inf[(ds, met, "tabpfn_3_5", "tuned")]["ref"] for ds in MAIN + ["ecommerce"] for met in ("emp", "prauc")}
 
 # ---------------------------------------------------------------- Table 4: rank agreement
 ra = defaultdict(list)
@@ -189,13 +223,14 @@ for ds in ("orange", "cell2cell"):
         for tag, label in (("", "full (natural rate)"), ("__ctx_1to2", "1:2"), ("__ctx_1to1", "1:1")):
             m = base + tag
             r = ctx[(ds, m)]
-            b = boot[(ds, "emp", m, best_ref[(ds, "emp")])]
-            d = f"{float(b['rel_diff_pct']):+.1f}\\%"
-            d = f"$\\mathbf{{{d}}}^{{\\ast}}$" if sig(b) else f"${d}$"
-            lines.append(f"{DS_NAME[ds]} & {M_NAME[base]} & {label} & {f(r['auc'])} & {f(r['prauc'])} & {f(r['emp'])} & {d} & "
+            b = inf[(ds, "emp", m, "tuned")]
+            lines.append(f"{DS_NAME[ds]} & {M_NAME[base]} & {label} & {f(r['auc'])} & {f(r['prauc'])} & {f(r['emp'])} & "
+                         f"${num(b, 'rel_pct'):+.1f}\\%$ & {b['seeds_positive']}/{b['J']} & {pfmt(num(b, 'nb_p'))} & "
                          f"${100 * float(r['citl_raw']):+.1f}$ \\\\")
             if ds == "orange" and base == "tabpfn_3_5":
-                macro("ctxOrangePFN" + {"": "Full", "__ctx_1to2": "Half", "__ctx_1to1": "Bal"}[tag], f"{float(b['rel_diff_pct']):+.1f}")
+                key = {"": "Full", "__ctx_1to2": "Half", "__ctx_1to1": "Bal"}[tag]
+                macro("ctxOrangePFN" + key, f"{num(b, 'rel_pct'):+.1f}")
+                macro("ctxOrangePFNp" + key, pfmt(num(b, "nb_p")))
         lines.append("\\midrule")
 write("context.tex", "\n".join(lines[:-1]) + "\n")
 macro("ctxCitlOrange", f"{100 * float(ctx[('orange', 'tabpfn_3_5__ctx_1to1')]['citl_raw']):+.1f}")
@@ -207,9 +242,9 @@ lines = []
 for m in ["xgb_default", "xgb", "lgbm", "catboost", "tabicl_v2", "tabpfn_2_5", "tabpfn_3_5"]:
     s = summ[(ds, m)]
     if m in TFMS:
-        dd = cell(ds, "prauc", m, "xgb_default")
-        dt = cell(ds, "prauc", m, tuned)
-        de = cell(ds, "emp", m, best_ref[(ds, "emp")])
+        dd = cell(ds, "prauc", m, "default")
+        dt = cell(ds, "prauc", m, "tuned")
+        de = cell(ds, "emp", m, "tuned")
     else:
         dd = dt = de = "--"
     if m == "tabicl_v2":
@@ -218,11 +253,68 @@ for m in ["xgb_default", "xgb", "lgbm", "catboost", "tabicl_v2", "tabpfn_2_5", "
 write("replication.tex", "\n".join(lines) + "\n")
 macro("replTuned", M_NAME[tuned])
 for m, k in (("tabicl_v2", "ICL"), ("tabpfn_3_5", "PFNThree")):
-    macro(f"repl{k}Default", f"{100 * float(boot[(ds, 'prauc', m, 'xgb_default')]['diff_mean']):+.1f}")
-    macro(f"repl{k}Tuned", f"{100 * float(boot[(ds, 'prauc', m, tuned)]['diff_mean']):+.1f}")
-    macro(f"repl{k}EMP", f"{float(boot[(ds, 'emp', m, best_ref[(ds, 'emp')])]['rel_diff_pct']):+.1f}")
+    macro(f"repl{k}Default", f"{100 * num(inf[(ds, 'prauc', m, 'default')], 'mean_diff'):+.1f}")
+    macro(f"repl{k}Tuned", f"{100 * num(inf[(ds, 'prauc', m, 'tuned')], 'mean_diff'):+.1f}")
+    macro(f"repl{k}EMP", f"{num(inf[(ds, 'emp', m, 'tuned')], 'rel_pct'):+.1f}")
+    macro(f"repl{k}TunedP", pfmt(num(inf[(ds, 'prauc', m, 'tuned')], 'nb_p')))
+    macro(f"repl{k}Seeds", inf[(ds, 'prauc', m, 'tuned')]['seeds_positive'])
 macro("replDefaultPR", f(summ[(ds, "xgb_default")]["prauc_mean"]))
 macro("replTunedPR", f(summ[(ds, tuned)]["prauc_mean"]))
+
+# ---------------------------------------------------------------- Table 9: sensitivity (tuning budget, duplicates)
+lines = []
+for ds in ("cell2cell", "iranian", "orange"):
+    for tfm in ("tabpfn_3_5", "tabicl_v2"):
+        a, b = inf.get((ds, "emp", tfm, "tuned")), inf.get((ds, "emp", tfm, "strong"))
+        if not (a and b):
+            continue
+        lines.append(f"{DS_NAME[ds]} & {M_NAME[tfm]} & {M_NAME.get(a['ref'], a['ref'])} & ${num(a, 'rel_pct'):+.1f}\\%$ & "
+                     f"{M_NAME.get(b['ref'], b['ref'])} & ${num(b, 'rel_pct'):+.1f}\\%$ & {b['seeds_positive']}/{b['J']} & "
+                     f"{pfmt(num(b, 'nb_p'))} \\\\")
+        if tfm == "tabpfn_3_5":
+            macro(f"strongPFNThree{DS_KEY[ds]}", f"{num(b, 'rel_pct'):+.1f}")
+            macro(f"strongRef{DS_KEY[ds]}", M_NAME.get(b["ref"], b["ref"]))
+if lines:
+    write("strong.tex", "\n".join(lines) + "\n")
+per_seed = defaultdict(list)
+for r in rows("metrics_per_seed.csv"):
+    per_seed[(r["dataset"], r["model"])].append(r)
+for ds in ("cell2cell", "iranian", "orange"):  # best GBDT EMP with 200 vs 25-40 trials, on the seeds both were run
+    seeds = {r["seed"] for m in ("lgbm_200", "catboost_200") for r in per_seed[(ds, m)]}
+    best = lambda ms: max(st.mean(float(r["emp"]) for r in per_seed[(ds, m)] if r["seed"] in seeds) for m in ms)
+    b40, b200 = best(["lgbm", "xgb", "catboost"]), best(["lgbm_200", "catboost_200"])
+    macro(f"strongDelta{DS_KEY[ds]}", f"{100 * (b200 - b40) / abs(b40):+.1f}")
+lines = []
+for ds in ("telco", "iranian", "ecommerce"):
+    meta = K / f"{ds}-dupgroup-cpu/data_meta.json"
+    if not meta.exists():
+        continue
+    dstat = json.load(open(meta))["duplicates"]
+    macro(f"conflictGroups{DS_KEY[ds]}", str(dstat["n_conflict_groups"]))
+    macro(f"conflictRows{DS_KEY[ds]}", str(dstat["n_conflict_rows"]))
+    macro(f"churnBefore{DS_KEY[ds]}", f"{100 * dstat['churn_rate_before']:.1f}")
+    macro(f"churnAfter{DS_KEY[ds]}", f"{100 * dstat['churn_rate_after_dedup']:.1f}")
+    for tfm in ("tabpfn_3_5", "tabicl_v2"):
+        a, b = inf.get((ds, "emp", tfm, "tuned")), inf.get((f"{ds}_dupgroup", "emp", tfm, "tuned"))
+        if not (a and b):
+            continue
+        lines.append(f"{DS_NAME[ds]} & {dstat['n_dup']} & {dstat['n_conflict_rows']} & "
+                     f"{100 * dstat['churn_rate_before']:.1f} / {100 * dstat['churn_rate_after_dedup']:.1f} & {M_NAME[tfm]} & "
+                     f"${num(a, 'rel_pct'):+.1f}\\%$ & ${num(b, 'rel_pct'):+.1f}\\%$ & {pfmt(num(b, 'nb_p'))} \\\\")
+if lines:
+    write("dupgroup.tex", "\n".join(lines) + "\n")
+dmeta = [json.load(open(p))["duplicates"] for p in sorted(K.glob("*-dupgroup-cpu/data_meta.json"))]
+if dmeta:
+    macro("maxChurnShift", f"{max(abs(100 * (d['churn_rate_before'] - d['churn_rate_after_dedup'])) for d in dmeta):.1f}")
+shifts = [abs(num(inf[(ds, "emp", t, "tuned")], "rel_pct") - num(inf[(f"{ds}_dupgroup", "emp", t, "tuned")], "rel_pct"))
+          for ds in ("telco", "iranian", "ecommerce") for t in TFMS if (f"{ds}_dupgroup", "emp", t, "tuned") in inf]
+if shifts:
+    macro("maxDupShift", f"{max(shifts):.1f}")
+
+FIG = Path(__file__).resolve().parent / "figures"
+FIG.mkdir(exist_ok=True)
+for pdf in (A / "figures").glob("*.pdf"):
+    shutil.copy(pdf, FIG / pdf.name)
 
 # ---------------------------------------------------------------- Table 8: scoring throughput
 T = json.load(open(K / "all-timing/timing.json")) + json.load(open(K / "orange-tabicl-timing/timing.json"))

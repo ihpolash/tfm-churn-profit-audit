@@ -2,8 +2,11 @@
 
 Ranking: AUC, PR-AUC, lift@10%.  Profit: EMP (Verbraken et al. 2013), e-Profits (Manzoor et al., KM-based CLV),
 fixed-threshold campaign policy over a cost grid.  Calibration: Brier, ECE, raw vs isotonic vs Platt.
-Statistics: mean/sd over seeds, paired bootstrap CIs of each TFM vs the best tuned GBDT, rank agreement between
-metrics, and scoring-cost break-even.  Writes CSVs + summary.md to /kaggle/working.
+Statistics: mean/sd over seeds; per comparison of a TFM with the best tuned GBDT, the per-seed differences, a
+Nadeau-Bengio corrected resampled t-test across seeds, a two-level (seed, then customer) bootstrap interval, and Holm
+correction over the pre-declared primary family (EMP, four TFMs x five main datasets); the earlier pooled customer
+bootstrap is kept for reference. Also rank agreement, calibration regret, break-even, a forest plot and a reliability
+diagram. Writes CSVs, figures/ and summary.md to CHURN_OUTPUT (default /kaggle/working).
 """
 import glob, json, os, warnings, zlib
 from collections import defaultdict
@@ -29,6 +32,10 @@ GBDT = ["lgbm", "xgb", "catboost"]
 is_tfm = lambda m: m.startswith(("tabpfn", "tabicl"))
 is_ablation = lambda m: "__ctx_" in m  # context-construction variants, kept out of the main rank tables
 REPLICATION = {"ecommerce"}            # workshop-paper replication check, kept out of cross-dataset tables
+STRONG = ["lgbm_200", "catboost_200"]  # 200-trial baselines, used only in the tuning-budget sensitivity check
+BASE_TFMS = ["tabicl_v2", "tabpfn_2_5", "tabpfn_3_5", "tabpfn_3_5_fast"]
+BH = 1000                              # two-level bootstrap resamples
+is_sensitivity = lambda ds: ds.endswith("_dupgroup")  # duplicates kept, split by duplicate group
 GAMMAS = (np.arange(200) + 0.5) / 200
 W = stats.beta.pdf(GAMMAS, A, BETA); W /= W.sum()
 
@@ -46,6 +53,14 @@ def ece(y, p, nb=15):
 
 def gains(y, gamma, clv=CLV, d=D, f=F):
     return np.where(y == 1, gamma * (clv - d - f) - (1 - gamma) * f, -(d + f))
+
+
+def emp_fast(y, p):
+    """EMP via cumulative churner/non-churner counts; algebraically identical to emp(), several times faster."""
+    ys = y[np.argsort(-p)]
+    n1 = np.concatenate([[0], np.cumsum(ys)]); n0 = np.arange(len(ys) + 1) - n1
+    prof = np.outer(GAMMAS * (CLV - D) - F, n1) - (D + F) * n0[None, :]
+    return float((W * prof.max(axis=1)).sum() / len(y))
 
 
 def emp(y, p):
@@ -102,6 +117,10 @@ def calibrators(pcal, ycal, pte):
     return {"raw": pte,
             "iso": IsotonicRegression(out_of_bounds="clip").fit(pcal, ycal).predict(pte),
             "platt": LogisticRegression(C=1e6).fit(lg(pcal)[:, None], ycal).predict_proba(lg(pte)[:, None])[:, 1]}
+
+
+_rng = np.random.default_rng(1); _y = (_rng.random(3000) < .2).astype(int); _p = _rng.random(3000)
+assert abs(emp(_y, _p) - emp_fast(_y, _p)) < 1e-9, 'emp_fast disagrees with emp'
 
 
 # ---------------------------------------------------------------- load
@@ -190,6 +209,11 @@ def main():
                                  rel_diff_pct=100 * d.mean() / abs(mean[ref])))
     BOOT = pd.DataFrame(boot); BOOT.to_csv(f"{OUT}/bootstrap_vs_best_gbdt.csv", index=False)
 
+    # ---- inference that treats the split as a source of variation
+    INF = inference(M, preds, side)
+    INF.to_csv(f"{OUT}/inference.csv", index=False)
+    figures(INF, M, preds, side)
+
     # ---- context-construction ablation vs the same model with its full natural-rate context
     abl = M[M.model.map(is_ablation)].assign(base=lambda d: d.model.str.split("__ctx_").str[0])
     ABL = pd.DataFrame()
@@ -200,7 +224,8 @@ def main():
     ABL.to_csv(f"{OUT}/context_ablation.csv")
 
     # ---- rank agreement between ranking metrics and profit metrics (main models only)
-    M_all, M = M, M[~M.model.map(is_ablation) & ~M.dataset.isin(REPLICATION) & (M.model != "xgb_default")]
+    M_all, M = M, M[~M.model.map(is_ablation) & ~M.dataset.isin(REPLICATION) & (M.model != "xgb_default")
+                    & ~M.dataset.map(is_sensitivity) & ~M.model.isin(STRONG)]
     ra = []
     pm = [c for c in ("emp", "eprof_top20", "eprof_best", "eprof_thr0.5_raw") if c in M.columns]
     for (ds, seed), g in M.groupby(["dataset", "seed"]):
@@ -235,13 +260,130 @@ def main():
     CITL = M_all.groupby(["dataset", "model"])[["citl_raw", "citl_iso", "citl_platt"]].mean()
 
     with open(f"{OUT}/summary.md", "w") as fh:
-        for title, df in [("Mean metrics (sd over seeds) + timing", agg), ("TFM vs best tuned GBDT (paired bootstrap 95% CI)", BOOT),
+        for title, df in [("Mean metrics (sd over seeds) + timing", agg),
+                          ("Primary inference: corrected t-test across seeds, Holm, two-level bootstrap", INF),
+                          ("TFM vs best tuned GBDT (pooled customer bootstrap, reference only)", BOOT),
                           ("Context-construction ablation (mean over seeds)", ABL),
                           ("Calibration-in-the-large (observed - mean predicted churn rate)", CITL),
                           ("Average rank per metric (lower is better)", AVG_RANK), ("Rank agreement with AUC", RA.groupby(["dataset", "metric"])[["kendall_tau_vs_auc", "top1_changed"]].mean()),
                           ("Fixed-threshold policy regret vs oracle (median over cost grid & seeds)", CAL), ("Break-even (EMP units = currency with CLV=200)", BE)]:
             fh.write(f"\n## {title}\n\n{df.round(4).to_markdown()}\n")
     print(open(f"{OUT}/summary.md").read())
+
+
+def inference(M, preds, side):
+    """Per comparison: per-seed differences on the full test set, Nadeau-Bengio corrected t-test over seeds
+    (variance inflated by 1/J + n_test/n_train for overlapping random splits), and a two-level bootstrap that
+    resamples seeds and then customers. Holm is applied within the primary family only."""
+    fns = {"emp": (emp, emp_fast), "prauc": (average_precision_score,) * 2, "auc": (roc_auc_score,) * 2}
+    rows = []
+    for ds in M.dataset.unique():
+        mean = {met: M[M.dataset == ds].groupby("model")[met].mean() for met in fns}
+        for met, (fn, fast) in fns.items():
+            gb = [m for m in GBDT if m in mean[met].index]
+            if not gb:
+                continue
+            refsets = {"tuned": mean[met][gb].idxmax()}
+            if any(m in mean[met].index for m in STRONG):
+                refsets["strong"] = mean[met][gb + [m for m in STRONG if m in mean[met].index]].idxmax()
+            if "xgb_default" in mean[met].index:
+                refsets["default"] = "xgb_default"
+            for refset, ref in refsets.items():
+                for tfm in [m for m in mean[met].index if is_tfm(m)]:
+                    seeds = sorted(s for (d, m, s) in preds if d == ds and m == tfm and (ds, ref, s) in preds)
+                    if len(seeds) < 2:
+                        continue
+                    cells = []
+                    for s in seeds:
+                        a, b = preds[(ds, tfm, s)], preds[(ds, ref, s)]
+                        assert np.array_equal(a["idx_test"], b["idx_test"])
+                        cells.append((side[ds]["y"][a["idx_test"]], a["p_test"], b["p_test"],
+                                      len(a["idx_test"]) / len(a["idx_train"])))
+                    d = np.array([fn(y, pa) - fn(y, pb) for y, pa, pb, _ in cells])
+                    J, ratio = len(d), np.mean([c[3] for c in cells])
+                    var = (1 / J + ratio) * d.var(ddof=1)
+                    tstat = d.mean() / np.sqrt(var) if var > 0 else np.inf * np.sign(d.mean())
+                    pval = float(2 * stats.t.sf(abs(tstat), J - 1))
+                    row = dict(dataset=ds, metric=met, tfm=tfm, ref=ref, ref_set=refset, J=J, mean_diff=d.mean(),
+                               rel_pct=100 * d.mean() / abs(mean[met][ref]), seeds_positive=int((d > 0).sum()),
+                               nb_t=tstat, nb_p=pval, **{f"diff_s{s}": v for s, v in zip(seeds, d)})
+                    if met in ("emp", "prauc") and not is_ablation(tfm):
+                        rng = np.random.default_rng(zlib.crc32(f"{ds}|{met}|{tfm}|{ref}|hier".encode()))
+                        H = np.empty(BH)
+                        for h in range(BH):
+                            acc = 0.0
+                            for j in rng.integers(0, J, J):
+                                y, pa, pb, _ = cells[j]
+                                i = rng.integers(0, len(y), len(y))
+                                acc += fast(y[i], pa[i]) - fast(y[i], pb[i])
+                            H[h] = acc / J
+                        row.update(hier_lo=np.percentile(H, 2.5), hier_hi=np.percentile(H, 97.5))
+                        for s, (y, pa, pb, _) in zip(seeds, cells):  # per-seed customer bootstrap interval
+                            ps = [fast(y[i], pa[i]) - fast(y[i], pb[i])
+                                  for i in (rng.integers(0, len(y), len(y)) for _ in range(300))]
+                            row[f"lo_s{s}"], row[f"hi_s{s}"] = np.percentile(ps, [2.5, 97.5])
+                    rows.append(row)
+    INF = pd.DataFrame(rows)
+    primary = ((INF.metric == "emp") & (INF.ref_set == "tuned") & INF.tfm.isin(BASE_TFMS)
+               & ~INF.dataset.isin(REPLICATION) & ~INF.dataset.map(is_sensitivity))
+    INF["primary"] = primary
+    p = INF.loc[primary, "nb_p"].sort_values()
+    m = len(p)
+    holm = np.minimum(1, np.maximum.accumulate([(m - k) * v for k, v in enumerate(p.values)]))
+    INF.loc[p.index, "holm_p"] = holm
+    return INF
+
+
+def figures(INF, M, preds, side):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    os.makedirs(f"{OUT}/figures", exist_ok=True)
+    names = {"tabicl_v2": "TabICL v2", "tabpfn_2_5": "TabPFN-2.5", "tabpfn_3_5": "TabPFN-3.5",
+             "tabpfn_3_5_fast": "TabPFN-3.5-Fast", "lgbm": "LightGBM", "xgb": "XGBoost", "catboost": "CatBoost"}
+    order = ["telco", "maven", "cell2cell", "iranian", "orange"]
+    P = INF[INF.primary].copy()
+    P["o"] = P.dataset.map({d: i for i, d in enumerate(order)})
+    P = P.sort_values(["o", "tfm"])
+    fig, ax = plt.subplots(figsize=(6.2, 6.0))
+    yt, yl = [], []
+    for k, r in enumerate(P.itertuples()):
+        yy = -k - 0.6 * r.o
+        filled = r.holm_p < 0.05
+        ax.errorbar(r.mean_diff, yy, xerr=[[r.mean_diff - r.hier_lo], [r.hier_hi - r.mean_diff]], fmt="o",
+                    color="#1f4e79", mfc="#1f4e79" if filled else "white", ms=5, capsize=2, lw=1)
+        yt.append(yy); yl.append(f"{r.dataset.capitalize() if r.dataset != 'cell2cell' else 'Cell2Cell'} · {names[r.tfm]}")
+    ax.axvline(0, color="grey", lw=0.8)
+    ax.set_yticks(yt); ax.set_yticklabels(yl, fontsize=7)
+    ax.set_xlabel("EMP difference to best tuned GBDT (per customer, CLV units)")
+    ax.set_title("Filled: Holm-adjusted p < 0.05; bars: two-level bootstrap 95% interval", fontsize=8)
+    fig.tight_layout(); fig.savefig(f"{OUT}/figures/forest_emp.pdf"); plt.close(fig)
+
+    ds = "orange"
+    gb = M[(M.dataset == ds) & M.model.isin(GBDT)].groupby("model").emp.mean().idxmax()
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.6), sharey=True)
+    for ax, model in zip(axes, [gb, "tabicl_v2", "tabpfn_3_5"]):
+        for kind, style in (("raw", "o-"), ("isotonic", "s--")):
+            ys, ps = [], []
+            for s in sorted(M.seed.unique()):
+                P_ = preds.get((ds, model, s))
+                if P_ is None:
+                    continue
+                y = side[ds]["y"]; yte, ycal = y[P_["idx_test"]], y[P_["idx_cal"]]
+                p = P_["p_test"] if kind == "raw" else IsotonicRegression(out_of_bounds="clip").fit(P_["p_cal"], ycal).predict(P_["p_test"])
+                ys.append(yte); ps.append(p)
+            ys, ps = np.concatenate(ys), np.concatenate(ps)
+            edges = np.unique(np.quantile(ps, np.linspace(0, 1, 11)))
+            b = np.clip(np.searchsorted(edges, ps, side="right") - 1, 0, len(edges) - 2)
+            xs = [ps[b == k].mean() for k in range(len(edges) - 1) if (b == k).any()]
+            obs = [ys[b == k].mean() for k in range(len(edges) - 1) if (b == k).any()]
+            ax.plot(xs, obs, style, ms=3, lw=1, label=kind)
+        lim = 0.35
+        ax.plot([0, lim], [0, lim], color="grey", lw=0.8)
+        ax.set_xlim(0, lim); ax.set_ylim(0, lim); ax.set_title(names[model], fontsize=9)
+        ax.set_xlabel("mean predicted churn", fontsize=8)
+    axes[0].set_ylabel("observed churn rate", fontsize=8); axes[0].legend(fontsize=7)
+    fig.tight_layout(); fig.savefig(f"{OUT}/figures/reliability_orange.pdf"); plt.close(fig)
 
 
 if __name__ == "__main__":

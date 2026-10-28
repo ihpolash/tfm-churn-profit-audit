@@ -1,0 +1,24 @@
+[{"stream_name":"stdout","time":19.582249599,"data":"16:08:51 lightgbm 4.6.0\n"}
+,{"stream_name":"stdout","time":19.58282606,"data":"16:08:51 xgboost 3.4.1\n"}
+,{"stream_name":"stdout","time":19.583362039,"data":"16:08:51 catboost 1.2.10\n"}
+,{"stream_name":"stdout","time":19.583950835,"data":"16:08:51 interpret 0.7.8\n"}
+,{"stream_name":"stdout","time":19.584898126,"data":"16:08:51 optuna 5.0.0\n"}
+,{"stream_name":"stdout","time":19.586159478,"data":"16:08:51 scikit-learn 1.6.1\n"}
+,{"stream_name":"stdout","time":33.475340426,"data":"16:09:05 == orange: X=(50000, 202) churn=0.0734 cat=34 duplicates={'n_dup': 0, 'n_conflict_groups': 0, 'n_conflict_rows': 0, 'churn_rate_before': 0.07344, 'churn_rate_after_dedup': 0.07344} dedup=True\n"}
+,{"stream_name":"stdout","time":879.640305732,"data":"16:23:11    lgbm_200 s0 fit=846s pred/10k=0.2s gpu=0.0GB auc=0.7348\n"}
+,{"stream_name":"stdout","time":2289.775116412,"data":"16:46:41    catboost_200 s0 fit=1410s pred/10k=0.0s gpu=0.0GB auc=0.7252\n"}
+,{"stream_name":"stdout","time":3188.455498588,"data":"17:01:40    lgbm_200 s1 fit=898s pred/10k=0.2s gpu=0.0GB auc=0.7355\n"}
+,{"stream_name":"stdout","time":4158.829579418,"data":"17:17:50    catboost_200 s1 fit=970s pred/10k=0.0s gpu=0.0GB auc=0.7305\n"}
+,{"stream_name":"stdout","time":5569.062557078,"data":"17:41:21    lgbm_200 s2 fit=1410s pred/10k=0.0s gpu=0.0GB auc=0.7174\n"}
+,{"stream_name":"stdout","time":7790.582632973,"data":"18:18:22    catboost_200 s2 fit=2221s pred/10k=0.0s gpu=0.0GB auc=0.7183\n"}
+,{"stream_name":"stdout","time":8234.278000577,"data":"18:25:46    lgbm_200 s3 fit=443s pred/10k=0.1s gpu=0.0GB auc=0.7319\n"}
+,{"stream_name":"stdout","time":9813.872703353,"data":"18:52:05    catboost_200 s3 fit=1579s pred/10k=0.0s gpu=0.0GB auc=0.7266\n"}
+,{"stream_name":"stdout","time":10387.003364797,"data":"19:01:38    lgbm_200 s4 fit=573s pred/10k=0.1s gpu=0.0GB auc=0.7264\n"}
+,{"stream_name":"stdout","time":13565.400570601,"data":"19:54:37    catboost_200 s4 fit=3178s pred/10k=0.0s gpu=0.0GB auc=0.7291\n"}
+,{"stream_name":"stderr","time":13568.381277912,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":13568.38131344,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":13568.639817969,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":13568.639842103,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":13569.526218858,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":13570.22554669,"data":"[NbConvertApp] Writing 393022 bytes to __results__.html\n"}
+]

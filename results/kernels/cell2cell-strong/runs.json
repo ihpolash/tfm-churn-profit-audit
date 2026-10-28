@@ -1,0 +1,112 @@
+[
+ {
+  "dataset": "cell2cell",
+  "model": "lgbm_200",
+  "seed": 0,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 1609.9281966686249,
+  "pred_s_per_10k": 0.7015005498394793,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "catboost_200",
+  "seed": 0,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 3648.921985387802,
+  "pred_s_per_10k": 0.027880729353976647,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "lgbm_200",
+  "seed": 1,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 943.858565568924,
+  "pred_s_per_10k": 0.40825573867962245,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "catboost_200",
+  "seed": 1,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 2385.311725616455,
+  "pred_s_per_10k": 0.020284260405149097,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "lgbm_200",
+  "seed": 2,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 781.8376045227051,
+  "pred_s_per_10k": 0.5354241456154162,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "catboost_200",
+  "seed": 2,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 2456.2860958576202,
+  "pred_s_per_10k": 0.017236425640767515,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "lgbm_200",
+  "seed": 3,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 1431.5829858779907,
+  "pred_s_per_10k": 0.5463206452790951,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "catboost_200",
+  "seed": 3,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 1124.2255682945251,
+  "pred_s_per_10k": 0.01419816498191303,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "lgbm_200",
+  "seed": 4,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 1399.931497335434,
+  "pred_s_per_10k": 0.5182402607976632,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "cell2cell",
+  "model": "catboost_200",
+  "seed": 4,
+  "n_train": 30628,
+  "n_test": 10210,
+  "fit_s": 2408.8197269439697,
+  "pred_s_per_10k": 0.019696970761230947,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ }
+]

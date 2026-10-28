@@ -1,0 +1,112 @@
+[
+ {
+  "dataset": "orange",
+  "model": "lgbm_200",
+  "seed": 0,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 845.5979731082916,
+  "pred_s_per_10k": 0.23113131523132324,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "catboost_200",
+  "seed": 0,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 1410.0314071178436,
+  "pred_s_per_10k": 0.018935680389404297,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "lgbm_200",
+  "seed": 1,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 898.2407686710358,
+  "pred_s_per_10k": 0.17336702346801758,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "catboost_200",
+  "seed": 1,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 970.2644093036652,
+  "pred_s_per_10k": 0.021746158599853516,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "lgbm_200",
+  "seed": 2,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 1410.0901997089386,
+  "pred_s_per_10k": 0.024599313735961914,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "catboost_200",
+  "seed": 2,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 2221.410073041916,
+  "pred_s_per_10k": 0.02176976203918457,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "lgbm_200",
+  "seed": 3,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 443.4638683795929,
+  "pred_s_per_10k": 0.06871366500854492,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "catboost_200",
+  "seed": 3,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 1579.4850161075592,
+  "pred_s_per_10k": 0.020395517349243168,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "lgbm_200",
+  "seed": 4,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 572.8996071815491,
+  "pred_s_per_10k": 0.0691382884979248,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "orange",
+  "model": "catboost_200",
+  "seed": 4,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 3178.284932374954,
+  "pred_s_per_10k": 0.022318363189697266,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ }
+]

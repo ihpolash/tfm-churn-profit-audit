@@ -1,0 +1,43 @@
+[{"stream_name":"stdout","time":24.658374553,"data":"18:10:08 GPU Tesla T4 | TABPFN_TOKEN loaded: True\n"}
+,{"stream_name":"stdout","time":24.658433895,"data":"18:10:08 ModelVersion members: ['V2', 'V2_5', 'V2_6', 'V3', 'V3_5', 'V3_5_FAST']\n"}
+,{"stream_name":"stdout","time":24.659656932,"data":"18:10:08 tabpfn 9.2.0\n"}
+,{"stream_name":"stdout","time":24.661837226,"data":"18:10:08 tabicl 2.2.0\n"}
+,{"stream_name":"stdout","time":24.662909698,"data":"18:10:08 lightgbm 4.6.0\n"}
+,{"stream_name":"stdout","time":24.663593884,"data":"18:10:08 xgboost 3.4.1\n"}
+,{"stream_name":"stdout","time":24.664292625,"data":"18:10:08 catboost 1.2.10\n"}
+,{"stream_name":"stdout","time":24.665507531,"data":"18:10:08 optuna 5.0.0\n"}
+,{"stream_name":"stdout","time":24.666968655,"data":"18:10:08 scikit-learn 1.6.1\n"}
+,{"stream_name":"stdout","time":25.556042565,"data":"18:10:09 == cell2cell: X=(51047, 56) churn=0.2882 cat=22 duplicates={'n_dup': 0, 'n_conflict_groups': 0, 'n_conflict_rows': 0, 'churn_rate_before': 0.2881853977706819, 'churn_rate_after_dedup': 0.2881853977706819} dedup=True\n"}
+,{"stream_name":"stdout","time":28.129728539,"data":"INFO: You are downloading 'tabicl-classifier-v2-20260212.ckpt', the latest best-performing version, used in our TabICLv2 paper.\n"}
+,{"stream_name":"stdout","time":28.129757707,"data":"\n"}
+,{"stream_name":"stdout","time":28.129762655,"data":"Checkpoint 'tabicl-classifier-v2-20260212.ckpt' not cached.\n"}
+,{"stream_name":"stdout","time":28.129767076,"data":" Downloading from Hugging Face Hub (jingang/TabICL).\n"}
+,{"stream_name":"stdout","time":28.129771495,"data":"\n"}
+,{"stream_name":"stdout","time":120.605742844,"data":"18:11:44    tabicl_v2 s5 fit=23s pred/10k=35.0s gpu=12.8GB auc=0.6898\n"}
+,{"stream_name":"stderr","time":122.340128376,"data":"Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.\n"}
+,{"stream_name":"stdout","time":407.157975271,"data":"18:16:30    tabpfn_3_5 s5 fit=21s pred/10k=129.5s gpu=8.0GB auc=0.7011\n"}
+,{"stream_name":"stdout","time":478.731559924,"data":"18:17:42    tabpfn_3_5_fast s5 fit=3s pred/10k=33.5s gpu=7.4GB auc=0.6961\n"}
+,{"stream_name":"stdout","time":1287.359090454,"data":"18:31:11    tabpfn_2_5 s5 fit=7s pred/10k=392.5s gpu=2.0GB auc=0.6863\n"}
+,{"stream_name":"stdout","time":1371.385808347,"data":"18:32:35    tabicl_v2 s6 fit=4s pred/10k=39.3s gpu=12.8GB auc=0.6914\n"}
+,{"stream_name":"stdout","time":1638.295567909,"data":"18:37:01    tabpfn_3_5 s6 fit=1s pred/10k=130.1s gpu=8.0GB auc=0.7036\n"}
+,{"stream_name":"stdout","time":1707.222926864,"data":"18:38:10    tabpfn_3_5_fast s6 fit=1s pred/10k=33.3s gpu=7.4GB auc=0.6981\n"}
+,{"stream_name":"stdout","time":2512.430644177,"data":"18:51:36    tabpfn_2_5 s6 fit=4s pred/10k=392.5s gpu=2.0GB auc=0.6934\n"}
+,{"stream_name":"stdout","time":2596.398599508,"data":"18:53:00    tabicl_v2 s7 fit=4s pred/10k=39.3s gpu=12.8GB auc=0.6848\n"}
+,{"stream_name":"stdout","time":2863.432825529,"data":"18:57:27    tabpfn_3_5 s7 fit=1s pred/10k=130.2s gpu=8.0GB auc=0.7015\n"}
+,{"stream_name":"stdout","time":2932.436575032,"data":"18:58:36    tabpfn_3_5_fast s7 fit=1s pred/10k=33.3s gpu=7.4GB auc=0.6966\n"}
+,{"stream_name":"stdout","time":3737.974213226,"data":"19:12:01    tabpfn_2_5 s7 fit=4s pred/10k=392.7s gpu=2.0GB auc=0.6867\n"}
+,{"stream_name":"stdout","time":3822.004703992,"data":"19:13:25    tabicl_v2 s8 fit=4s pred/10k=39.4s gpu=12.8GB auc=0.6849\n"}
+,{"stream_name":"stdout","time":4088.978987129,"data":"19:17:52    tabpfn_3_5 s8 fit=1s pred/10k=130.2s gpu=8.0GB auc=0.7002\n"}
+,{"stream_name":"stdout","time":4157.822404892,"data":"19:19:01    tabpfn_3_5_fast s8 fit=1s pred/10k=33.3s gpu=7.4GB auc=0.6938\n"}
+,{"stream_name":"stdout","time":4963.832610314,"data":"19:32:27    tabpfn_2_5 s8 fit=4s pred/10k=392.7s gpu=2.0GB auc=0.6865\n"}
+,{"stream_name":"stdout","time":5047.867081348,"data":"19:33:51    tabicl_v2 s9 fit=4s pred/10k=39.3s gpu=12.8GB auc=0.6763\n"}
+,{"stream_name":"stdout","time":5314.840419164,"data":"19:38:18    tabpfn_3_5 s9 fit=1s pred/10k=130.1s gpu=8.0GB auc=0.6892\n"}
+,{"stream_name":"stdout","time":5383.704268087,"data":"19:39:27    tabpfn_3_5_fast s9 fit=1s pred/10k=33.4s gpu=7.4GB auc=0.6838\n"}
+,{"stream_name":"stdout","time":6189.904886534,"data":"19:52:53    tabpfn_2_5 s9 fit=4s pred/10k=392.9s gpu=2.0GB auc=0.6787\n"}
+,{"stream_name":"stderr","time":6196.826132123,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":6196.826168111,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":6197.119561988,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":6197.119591554,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":6198.052732302,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":6199.320368656,"data":"[NbConvertApp] Writing 393022 bytes to __results__.html\n"}
+]

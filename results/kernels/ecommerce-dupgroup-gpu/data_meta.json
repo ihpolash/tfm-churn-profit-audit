@@ -1,0 +1,41 @@
+{
+ "dataset": "ecommerce_dupgroup",
+ "n": 5630,
+ "n_feat": 18,
+ "churn_rate": 0.16838365896980462,
+ "cols": [
+  "Tenure",
+  "PreferredLoginDevice",
+  "CityTier",
+  "WarehouseToHome",
+  "PreferredPaymentMode",
+  "Gender",
+  "HourSpendOnApp",
+  "NumberOfDeviceRegistered",
+  "PreferedOrderCat",
+  "SatisfactionScore",
+  "MaritalStatus",
+  "NumberOfAddress",
+  "Complain",
+  "OrderAmountHikeFromlastYear",
+  "CouponUsed",
+  "OrderCount",
+  "DaySinceLastOrder",
+  "CashbackAmount"
+ ],
+ "cat_idx": [
+  1,
+  4,
+  5,
+  8,
+  10
+ ],
+ "n_dup_removed": 0,
+ "duplicates": {
+  "n_dup": 556,
+  "n_conflict_groups": 0,
+  "n_conflict_rows": 0,
+  "churn_rate_before": 0.16838365896980462,
+  "churn_rate_after_dedup": 0.165746945210879
+ }
+}

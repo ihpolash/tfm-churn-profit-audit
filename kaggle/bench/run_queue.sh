@@ -8,7 +8,7 @@ SOURCES=$(python3 -c "import json; print(' '.join(s.split('/')[1].removeprefix('
 queue=("$@")
 
 state() { kaggle kernels status "ipolas/churn-bench-$1" 2>&1 | grep -v outdated; }
-done_state() { grep -q -i -E 'complete|error|cancel'; }
+done_state() { grep -q -E 'KernelWorkerStatus\.(COMPLETE|ERROR|CANCEL)'; }  # a 404 (not yet pushed) is not done
 
 while ((${#queue[@]})); do
   out=$(kaggle kernels push -p "kernels/${queue[0]}-gpu" 2>&1 | grep -v outdated)

@@ -1,0 +1,39 @@
+[{"stream_name":"stdout","time":20.505743366,"data":"18:10:26 lightgbm 4.6.0\n"}
+,{"stream_name":"stdout","time":20.506360349,"data":"18:10:26 xgboost 3.4.1\n"}
+,{"stream_name":"stdout","time":20.506884653,"data":"18:10:26 catboost 1.2.10\n"}
+,{"stream_name":"stdout","time":20.507432515,"data":"18:10:26 interpret 0.7.8\n"}
+,{"stream_name":"stdout","time":20.508311256,"data":"18:10:26 optuna 5.0.0\n"}
+,{"stream_name":"stdout","time":20.509564738,"data":"18:10:26 scikit-learn 1.6.1\n"}
+,{"stream_name":"stdout","time":34.579687656,"data":"18:10:40 == orange: X=(50000, 202) churn=0.0734 cat=34 duplicates={'n_dup': 0, 'n_conflict_groups': 0, 'n_conflict_rows': 0, 'churn_rate_before': 0.07344, 'churn_rate_after_dedup': 0.07344} dedup=True\n"}
+,{"stream_name":"stdout","time":47.720368938,"data":"18:10:53    lr s5 fit=13s pred/10k=0.2s gpu=0.0GB auc=0.6932\n"}
+,{"stream_name":"stdout","time":281.906894661,"data":"18:14:47    lgbm s5 fit=234s pred/10k=0.1s gpu=0.0GB auc=0.7274\n"}
+,{"stream_name":"stdout","time":1059.050320002,"data":"18:27:44    xgb s5 fit=777s pred/10k=0.1s gpu=0.0GB auc=0.7329\n"}
+,{"stream_name":"stdout","time":1952.153288032,"data":"18:42:38    catboost s5 fit=893s pred/10k=0.0s gpu=0.0GB auc=0.7157\n"}
+,{"stream_name":"stdout","time":2543.869987856,"data":"18:52:29    ebm s5 fit=591s pred/10k=0.1s gpu=0.0GB auc=0.7245\n"}
+,{"stream_name":"stdout","time":2555.826926071,"data":"18:52:41    lr s6 fit=11s pred/10k=0.2s gpu=0.0GB auc=0.7020\n"}
+,{"stream_name":"stdout","time":2686.644545625,"data":"18:54:52    lgbm s6 fit=130s pred/10k=0.1s gpu=0.0GB auc=0.7399\n"}
+,{"stream_name":"stdout","time":2965.390037406,"data":"18:59:31    xgb s6 fit=279s pred/10k=0.0s gpu=0.0GB auc=0.7344\n"}
+,{"stream_name":"stdout","time":3396.791368565,"data":"19:06:42    catboost s6 fit=431s pred/10k=0.0s gpu=0.0GB auc=0.7351\n"}
+,{"stream_name":"stdout","time":3966.129179716,"data":"19:16:12    ebm s6 fit=569s pred/10k=0.1s gpu=0.0GB auc=0.7330\n"}
+,{"stream_name":"stdout","time":3979.43444737,"data":"19:16:25    lr s7 fit=13s pred/10k=0.2s gpu=0.0GB auc=0.7091\n"}
+,{"stream_name":"stdout","time":4168.971378822,"data":"19:19:34    lgbm s7 fit=189s pred/10k=0.2s gpu=0.0GB auc=0.7434\n"}
+,{"stream_name":"stdout","time":4432.660721775,"data":"19:23:58    xgb s7 fit=264s pred/10k=0.0s gpu=0.0GB auc=0.7401\n"}
+,{"stream_name":"stdout","time":4703.735918329,"data":"19:28:29    catboost s7 fit=271s pred/10k=0.0s gpu=0.0GB auc=0.7365\n"}
+,{"stream_name":"stdout","time":5282.939720817,"data":"19:38:08    ebm s7 fit=579s pred/10k=0.1s gpu=0.0GB auc=0.7355\n"}
+,{"stream_name":"stdout","time":5296.867356205,"data":"19:38:22    lr s8 fit=13s pred/10k=0.2s gpu=0.0GB auc=0.7009\n"}
+,{"stream_name":"stdout","time":5389.036779632,"data":"19:39:54    lgbm s8 fit=92s pred/10k=0.0s gpu=0.0GB auc=0.7287\n"}
+,{"stream_name":"stdout","time":6116.750865395,"data":"19:52:02    xgb s8 fit=727s pred/10k=0.1s gpu=0.0GB auc=0.7262\n"}
+,{"stream_name":"stdout","time":6828.604053309,"data":"20:03:54    catboost s8 fit=712s pred/10k=0.0s gpu=0.0GB auc=0.7195\n"}
+,{"stream_name":"stdout","time":7411.025145606,"data":"20:13:36    ebm s8 fit=582s pred/10k=0.1s gpu=0.0GB auc=0.7251\n"}
+,{"stream_name":"stdout","time":7423.42129758,"data":"20:13:49    lr s9 fit=12s pred/10k=0.2s gpu=0.0GB auc=0.7053\n"}
+,{"stream_name":"stdout","time":7585.205954747,"data":"20:16:31    lgbm s9 fit=161s pred/10k=0.2s gpu=0.0GB auc=0.7460\n"}
+,{"stream_name":"stdout","time":8402.256152433,"data":"20:30:08    xgb s9 fit=817s pred/10k=0.1s gpu=0.0GB auc=0.7459\n"}
+,{"stream_name":"stdout","time":9019.869911281,"data":"20:40:25    catboost s9 fit=617s pred/10k=0.0s gpu=0.0GB auc=0.7427\n"}
+,{"stream_name":"stdout","time":9625.567160991,"data":"20:50:31    ebm s9 fit=605s pred/10k=0.1s gpu=0.0GB auc=0.7333\n"}
+,{"stream_name":"stderr","time":9630.040922855,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":9630.040962516,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":9630.40799147,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":9630.408025063,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":9631.447771244,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":9632.295341297,"data":"[NbConvertApp] Writing 393019 bytes to __results__.html\n"}
+]

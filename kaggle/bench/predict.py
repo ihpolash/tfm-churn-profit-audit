@@ -5,13 +5,18 @@ One kernel per (dataset, group). Writes test/calibration probabilities for every
 analyze.py, so they can change without rerunning models. Splits are deterministic per seed (60/20/20).
 """
 import glob, json, os, subprocess, sys, time, traceback, warnings
+from functools import partial
 
 DATASET = "__DATASET__"  # telco | maven | cell2cell | iranian | orange | ecommerce (replication) | all (timing)
-GROUP = "__GROUP__"      # cpu | gpu | context | timing
+                         # suffix _dupgroup: keep duplicates, but never split identical rows (sensitivity check)
+GROUP = "__GROUP__"      # cpu | gpu | context | strong (200-trial GBDTs) | timing
+GPU = GROUP in ("gpu", "context", "timing")
+BASE = DATASET.removesuffix("_dupgroup")
+DEDUP = not DATASET.endswith("_dupgroup")
 SEEDS = [0, 1, 2, 3, 4]
 ALL_DATASETS = ["telco", "maven", "cell2cell", "iranian", "orange"]
 
-pkgs = ["tabpfn", "tabicl"] if GROUP != "cpu" else ["interpret", "optuna", "catboost"]
+pkgs = ["tabpfn", "tabicl"] if GPU else ["interpret", "optuna", "catboost"]
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", *pkgs], check=False)
 # TabPFN weights need a licence-accepted token (https://ux.priorlabs.ai): a Kaggle Secret named TABPFN_TOKEN,
 # or a file tabpfn_token.txt in an attached private dataset.
@@ -54,9 +59,18 @@ def finish(df, y, tenure=None, revenue=None):
     X = X.astype("float32")
     keep = [c for c in X.columns if X[c].notna().mean() > 0.01 and X[c].nunique(dropna=True) > 1]
     # Exact duplicate feature rows would let in-context learners look test rows up in their context: keep the first.
-    dup = X[keep].duplicated().values
-    side = {k: (None if v is None else v[~dup]) for k, v in side.items()} | {"n_dup": int(dup.sum())}
-    return X[keep].values[~dup], np.asarray(y, dtype=int)[~dup], [keep.index(c) for c in cat if c in keep], keep, side
+    y = np.asarray(y, dtype=int)
+    group = pd.util.hash_pandas_object(X[keep], index=False).values  # identical feature rows share a group
+    dup = pd.Series(group).duplicated().values
+    labels_per_group = pd.Series(y).groupby(group).nunique()
+    conflict = labels_per_group[labels_per_group > 1].index
+    stats = {"n_dup": int(dup.sum()), "n_conflict_groups": int(len(conflict)),
+             "n_conflict_rows": int(np.isin(group, conflict).sum()), "churn_rate_before": float(y.mean()),
+             "churn_rate_after_dedup": float(y[~dup].mean())}
+    if not DEDUP:  # keep duplicates; main() splits by group so identical rows never cross the split
+        return X[keep].values, y, [keep.index(c) for c in cat if c in keep], keep, side | stats | {"group": group}
+    side = {k: (None if v is None else v[~dup]) for k, v in side.items()} | stats
+    return X[keep].values[~dup], y[~dup], [keep.index(c) for c in cat if c in keep], keep, side
 
 
 def load_telco():
@@ -106,15 +120,15 @@ def inner(X, y, seed):
     return train_test_split(X, y, test_size=0.2, stratify=y, random_state=seed)
 
 
-def tune(objective, n_trials, seed):
+def tune(objective, n_trials, seed, timeout=1200):
     import optuna
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     st = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=seed))
-    st.optimize(objective, n_trials=n_trials, timeout=1200)
+    st.optimize(objective, n_trials=n_trials, timeout=timeout)
     return st.best_trial
 
 
-def fit_lgbm(X, y, seed, cat):
+def fit_lgbm(X, y, seed, cat, n_trials=40, timeout=1200):
     import lightgbm as lgb
     from sklearn.metrics import roc_auc_score
     Xa, Xv, ya, yv = inner(X, y, seed)
@@ -128,7 +142,7 @@ def fit_lgbm(X, y, seed, cat):
         t.set_user_attr("n", m.best_iteration_ or 3000)
         return roc_auc_score(yv, m.predict_proba(Xv)[:, 1])
 
-    b = tune(obj, 40, seed)
+    b = tune(obj, n_trials, seed, timeout)
     p = b.params
     return lgb.LGBMClassifier(n_estimators=b.user_attrs["n"], subsample_freq=1, verbose=-1, random_state=seed,
                               learning_rate=p["lr"], num_leaves=p["leaves"], min_child_samples=p["mcs"], subsample=p["ss"],
@@ -159,7 +173,7 @@ def fit_xgb(X, y, seed, cat):
                              colsample_bytree=p["cs"], reg_lambda=p["l2"]).fit(X, y)
 
 
-def fit_catboost(X, y, seed, cat):
+def fit_catboost(X, y, seed, cat, n_trials=25, timeout=1200):
     from catboost import CatBoostClassifier
     Xa, Xv, ya, yv = inner(X, y, seed)
 
@@ -175,7 +189,7 @@ def fit_catboost(X, y, seed, cat):
         t.set_user_attr("n", m.get_best_iteration() + 1)
         return m.get_best_score()["validation"]["AUC"]
 
-    b = tune(obj, 25, seed)
+    b = tune(obj, n_trials, seed, timeout)
     p = b.params
     return CatBoostClassifier(iterations=b.user_attrs["n"], random_seed=seed, verbose=False, thread_count=-1,
                               learning_rate=p["lr"], depth=p["depth"], l2_leaf_reg=p["l2"], random_strength=p["rs"],
@@ -258,10 +272,12 @@ MODELS = {
     "cpu": {"lr": fit_lr, "lgbm": fit_lgbm, "xgb": fit_xgb, "catboost": fit_catboost, "ebm": fit_ebm},
     "gpu": {"tabicl_v2": fit_tabicl, "tabpfn_3_5": tabpfn("V3_5"), "tabpfn_3_5_fast": tabpfn("V3_5_FAST"),
             "tabpfn_2_5": tabpfn("V2_5")},
+    "strong": {"lgbm_200": partial(fit_lgbm, n_trials=200, timeout=3600),
+               "catboost_200": partial(fit_catboost, n_trials=200, timeout=3600)},
     "context": {f"{name}__ctx_1to{r}": with_context(fit, r)
                 for name, fit in (("tabpfn_3_5", tabpfn("V3_5")), ("tabicl_v2", fit_tabicl)) for r in (1, 2)},
 }.get(GROUP, {})
-if DATASET == "ecommerce" and GROUP == "cpu":
+if BASE == "ecommerce" and GROUP == "cpu":
     MODELS["xgb_default"] = fit_xgb_default
 
 
@@ -278,13 +294,13 @@ def predict(m, X):
 
 
 def _gpu_reset():
-    if GROUP != "cpu":
+    if GPU:
         import torch
         torch.cuda.empty_cache(); torch.cuda.reset_peak_memory_stats()
 
 
 def _gpu_peak():
-    if GROUP == "cpu":
+    if not GPU:
         return 0.0
     import torch
     return torch.cuda.max_memory_allocated() / 1e9
@@ -334,7 +350,7 @@ def timing(sizes=(1000, 10000, 50000), budget_s=1500):
 
 # ---------------------------------------------------------------- run
 def main():
-    if GROUP != "cpu":
+    if GPU:
         import torch
         from tabpfn.constants import ModelVersion
         log("GPU", torch.cuda.get_device_name(0), "| TABPFN_TOKEN loaded:", bool(os.environ.get("TABPFN_TOKEN")))
@@ -348,17 +364,27 @@ def main():
     if GROUP == "timing":
         return timing()
 
-    X, y, cat, cols, side = globals()[f"load_{DATASET}"]()
-    log(f"== {DATASET}: X={X.shape} churn={y.mean():.4f} cat={len(cat)} duplicate rows removed={side['n_dup']}")
+    X, y, cat, cols, side = globals()[f"load_{BASE}"]()
+    dstats = {k: side[k] for k in ("n_dup", "n_conflict_groups", "n_conflict_rows", "churn_rate_before",
+                                   "churn_rate_after_dedup")}
+    log(f"== {DATASET}: X={X.shape} churn={y.mean():.4f} cat={len(cat)} duplicates={dstats} dedup={DEDUP}")
     np.savez_compressed(f"{OUT}/data_side.npz", y=y, tenure=side["tenure"] if side["tenure"] is not None else np.array([]),
                         revenue=side["revenue"] if side["revenue"] is not None else np.array([]))
     json.dump({"dataset": DATASET, "n": len(y), "n_feat": X.shape[1], "churn_rate": float(y.mean()), "cols": cols,
-               "cat_idx": cat, "n_dup_removed": side["n_dup"]}, open(f"{OUT}/data_meta.json", "w"), indent=1)
+               "cat_idx": cat, "n_dup_removed": side["n_dup"] if DEDUP else 0, "duplicates": dstats},
+              open(f"{OUT}/data_meta.json", "w"), indent=1)
 
     idx = np.arange(len(y))
     for seed in SEEDS:
-        itr, itmp = train_test_split(idx, test_size=0.4, stratify=y, random_state=seed)
-        ical, ite = train_test_split(itmp, test_size=0.5, stratify=y[itmp], random_state=seed)
+        if DEDUP:
+            itr, itmp = train_test_split(idx, test_size=0.4, stratify=y, random_state=seed)
+            ical, ite = train_test_split(itmp, test_size=0.5, stratify=y[itmp], random_state=seed)
+        else:  # split whole duplicate groups, stratified on whether the group contains a churner
+            ug, inv = np.unique(side["group"], return_inverse=True)
+            glab = np.zeros(len(ug), dtype=int); np.maximum.at(glab, inv, y)
+            gtr, gtmp = train_test_split(np.arange(len(ug)), test_size=0.4, stratify=glab, random_state=seed)
+            gcal, gte = train_test_split(gtmp, test_size=0.5, stratify=glab[gtmp], random_state=seed)
+            itr, ical, ite = (np.where(np.isin(inv, g))[0] for g in (gtr, gcal, gte))
         for name, fit in MODELS.items():
             run = dict(dataset=DATASET, model=name, seed=seed, n_train=len(itr), n_test=len(ite))
             try:

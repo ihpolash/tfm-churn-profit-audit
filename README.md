@@ -8,9 +8,9 @@ Calibration- and Tuning-Aware Re-evaluation"** (Ismail Hossain Polas, Jahangirna
 
 We compare four tabular foundation models (TabPFN-2.5, TabPFN-3.5, TabPFN-3.5-Fast, TabICL v2) against Optuna-tuned
 LightGBM, XGBoost and CatBoost, plus EBM and logistic regression. The comparison covers five public telecom churn
-datasets, with five seeded 60/20/20 splits each. Every model is scored on ranking metrics, on expected maximum profit
-(EMP), on e-Profits, on a fixed-threshold campaign policy, on calibration and on scoring time, with paired-bootstrap
-intervals.
+datasets, with ten seeded 60/20/20 splits each. Every model is scored on ranking metrics, on expected maximum profit
+(EMP), on e-Profits, on a fixed-threshold campaign policy, on calibration and on scoring time, with a split-aware corrected
+t-test, Holm correction over the pre-declared primary family, and two-level bootstrap intervals.
 
 ## Reproduce
 
@@ -37,8 +37,11 @@ dataset listed in the notebook. Foundation models need a T4 GPU and a TabPFN lic
 ```bash
 cd kaggle/bench
 ./make_kernels.sh push telco maven cell2cell iranian orange ecommerce   # CPU + GPU kernels per dataset
+SEEDS="5,6,7,8,9" ./make_kernels.sh push telco maven cell2cell iranian orange   # seeds 5-9 (10 seeds in total)
 ./make_kernels.sh push orange-context cell2cell-context timing          # ablation and scoring-time kernels
-./run_queue.sh                       # waits for the kernels (2 GPU sessions at a time), then runs the analysis kernel
+./make_kernels.sh push orange-strong cell2cell-strong iranian-strong    # 200-trial LightGBM and CatBoost (CPU)
+./make_kernels.sh push telco_dupgroup iranian_dupgroup ecommerce_dupgroup  # duplicates kept, split by group
+./run_queue.sh                       # waits for every kernel the analysis reads, then runs the analysis kernel
 ```
 The kernel IDs in `kaggle/bench/` belong to the author's Kaggle account; change the `ipolas/` prefix to your own.
 

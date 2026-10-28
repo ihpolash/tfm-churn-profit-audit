@@ -1,0 +1,112 @@
+[
+ {
+  "dataset": "iranian",
+  "model": "lgbm_200",
+  "seed": 0,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 167.76264238357544,
+  "pred_s_per_10k": 0.5071725643856425,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "catboost_200",
+  "seed": 0,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 1220.1376402378082,
+  "pred_s_per_10k": 0.07648283327129526,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "lgbm_200",
+  "seed": 1,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 59.66023921966553,
+  "pred_s_per_10k": 0.07435049809200663,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "catboost_200",
+  "seed": 1,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 373.75743293762207,
+  "pred_s_per_10k": 0.031657621894084234,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "lgbm_200",
+  "seed": 2,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 97.81501364707947,
+  "pred_s_per_10k": 0.1429923823182012,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "catboost_200",
+  "seed": 2,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 635.6492340564728,
+  "pred_s_per_10k": 0.033651439236923,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "lgbm_200",
+  "seed": 3,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 113.38380312919617,
+  "pred_s_per_10k": 0.4378464859975896,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "catboost_200",
+  "seed": 3,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 697.837726354599,
+  "pred_s_per_10k": 0.036279080619274734,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "lgbm_200",
+  "seed": 4,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 44.26570749282837,
+  "pred_s_per_10k": 0.03143515385372538,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ },
+ {
+  "dataset": "iranian",
+  "model": "catboost_200",
+  "seed": 4,
+  "n_train": 1701,
+  "n_test": 568,
+  "fit_s": 321.3898341655731,
+  "pred_s_per_10k": 0.028316403778505996,
+  "status": "ok",
+  "gpu_peak_gb": 0.0
+ }
+]

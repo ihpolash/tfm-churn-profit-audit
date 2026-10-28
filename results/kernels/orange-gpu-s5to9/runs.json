@@ -1,0 +1,222 @@
+[
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2",
+  "seed": 5,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 12.434361696243286,
+  "pred_s_per_10k": 91.12194633483887,
+  "status": "ok",
+  "gpu_peak_gb": 8.080712192
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5",
+  "seed": 5,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 9.39518404006958,
+  "pred_s_per_10k": 190.73841881752014,
+  "status": "ok",
+  "gpu_peak_gb": 7.576610304
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5_fast",
+  "seed": 5,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 5.225273132324219,
+  "pred_s_per_10k": 66.92416024208069,
+  "status": "ok",
+  "gpu_peak_gb": 7.036550656
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_2_5",
+  "seed": 5,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 16.908607482910156,
+  "pred_s_per_10k": 1204.4398913383484,
+  "status": "ok",
+  "gpu_peak_gb": 6.708382208
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2",
+  "seed": 6,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 8.063492774963379,
+  "pred_s_per_10k": 82.7143883705139,
+  "status": "ok",
+  "gpu_peak_gb": 8.05268736
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5",
+  "seed": 6,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 2.2774555683135986,
+  "pred_s_per_10k": 190.10075521469116,
+  "status": "ok",
+  "gpu_peak_gb": 7.575594496
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5_fast",
+  "seed": 6,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 1.1999781131744385,
+  "pred_s_per_10k": 66.73071575164795,
+  "status": "ok",
+  "gpu_peak_gb": 7.036550656
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_2_5",
+  "seed": 6,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 13.469917058944702,
+  "pred_s_per_10k": 1202.7062714099884,
+  "status": "ok",
+  "gpu_peak_gb": 6.708382208
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2",
+  "seed": 7,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 7.586576461791992,
+  "pred_s_per_10k": 82.87563610076903,
+  "status": "ok",
+  "gpu_peak_gb": 8.05268736
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5",
+  "seed": 7,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 2.1393983364105225,
+  "pred_s_per_10k": 190.08433079719546,
+  "status": "ok",
+  "gpu_peak_gb": 7.575594496
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5_fast",
+  "seed": 7,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 1.1753065586090088,
+  "pred_s_per_10k": 66.77508211135864,
+  "status": "ok",
+  "gpu_peak_gb": 7.036550656
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_2_5",
+  "seed": 7,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 14.813396692276001,
+  "pred_s_per_10k": 1203.6278007030487,
+  "status": "ok",
+  "gpu_peak_gb": 6.708382208
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2",
+  "seed": 8,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 7.641881942749023,
+  "pred_s_per_10k": 82.97442364692688,
+  "status": "ok",
+  "gpu_peak_gb": 8.05268736
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5",
+  "seed": 8,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 2.153250217437744,
+  "pred_s_per_10k": 190.10662722587585,
+  "status": "ok",
+  "gpu_peak_gb": 7.575594496
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5_fast",
+  "seed": 8,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 1.134058952331543,
+  "pred_s_per_10k": 66.70971155166626,
+  "status": "ok",
+  "gpu_peak_gb": 7.036550656
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_2_5",
+  "seed": 8,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 14.138230323791504,
+  "pred_s_per_10k": 1203.148008108139,
+  "status": "ok",
+  "gpu_peak_gb": 6.708382208
+ },
+ {
+  "dataset": "orange",
+  "model": "tabicl_v2",
+  "seed": 9,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 7.682989120483398,
+  "pred_s_per_10k": 83.0440731048584,
+  "status": "ok",
+  "gpu_peak_gb": 8.05217536
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5",
+  "seed": 9,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 2.1000142097473145,
+  "pred_s_per_10k": 189.68163561820984,
+  "status": "ok",
+  "gpu_peak_gb": 7.575594496
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_3_5_fast",
+  "seed": 9,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 1.1499412059783936,
+  "pred_s_per_10k": 66.7006847858429,
+  "status": "ok",
+  "gpu_peak_gb": 7.036550656
+ },
+ {
+  "dataset": "orange",
+  "model": "tabpfn_2_5",
+  "seed": 9,
+  "n_train": 30000,
+  "n_test": 10000,
+  "fit_s": 13.435272455215454,
+  "pred_s_per_10k": 1201.3423020839691,
+  "status": "ok",
+  "gpu_peak_gb": 6.708382208
+ }
+]
