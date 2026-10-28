@@ -161,13 +161,33 @@ for r in csv.DictReader(open(A / "metrics_per_seed.csv")):
         cal[(r["dataset"], r["model"])].append(float(r["emp_cal"]))
 ref_ok = all(r["ref"] == max(("lgbm", "xgb", "catboost"), key=lambda m: st.mean(cal[(r["dataset"], m)])) for r in prim)
 check(ref_ok, "every primary reference GBDT is the one with the best mean calibration-split EMP")
+cal_by_seed = {(r["dataset"], r["model"], r["seed"]): float(r["emp_cal"]) for r in csv.DictReader(open(A / "metrics_per_seed.csv"))}
+seeds_of = lambda r: [k[len("diff_s"):] for k in r if k.startswith("diff_s") and r[k] != ""]
+def best_cal(r, cands):
+    return max((m for m in cands if all((r["dataset"], m, s) in cal_by_seed for s in seeds_of(r))),
+               key=lambda m: st.mean(cal_by_seed[(r["dataset"], m, s)] for s in seeds_of(r)))
+sens = [r for r in INF if r["ref_set"] in ("strong", "strong_base") and r["metric"] == "emp"]
+check(sens and all(r["ref"] == best_cal(r, ("lgbm", "xgb", "catboost") + (("lgbm_200", "catboost_200") if r["ref_set"] == "strong" else ()))
+                   for r in sens),
+      "both tuning-budget references are the best calibration-split EMP on the same five splits they are compared on")
+
+# The primary family is exactly the 4 TFMs x 5 main datasets.
+check(len(prim) == 20 and len({(r["dataset"], r["tfm"]) for r in prim}) == 20
+      and {r["dataset"] for r in prim} == {"telco", "maven", "cell2cell", "iranian", "orange"}
+      and {r["tfm"] for r in prim} == {"tabicl_v2", "tabpfn_2_5", "tabpfn_3_5", "tabpfn_3_5_fast"},
+      "primary family: EMP, 4 TFMs x 5 datasets = 20 distinct comparisons")
+
+# Relative gain = 100 x mean per-split difference / mean reference EMP over the same splits.
+test_by_seed = {(r["dataset"], r["model"], r["seed"]): float(r["emp"]) for r in csv.DictReader(open(A / "metrics_per_seed.csv"))}
+rel_err = max(abs(fl(r, "rel_pct") - 100 * fl(r, "mean_diff") / abs(st.mean(test_by_seed[(r["dataset"], r["ref"], s)] for s in seeds_of(r))))
+              for r in INF if r["metric"] == "emp" and r["ref_set"] in ("tuned", "strong", "strong_base"))
+check(rel_err < 1e-6, f"relative EMP gains use the reference's mean EMP over the compared splits as denominator (max diff {rel_err:.1e})")
 
 # 7. Robustness checks cover exactly the datasets and splits the paper states.
-strong = {(r["dataset"], r["J"]) for r in INF if r["ref_set"] == "strong" and r["metric"] == "emp"
-          and r["ref"] in ("lgbm_200", "catboost_200")}
+strong = {(r["dataset"], r["J"]) for r in INF if r["ref_set"] in ("strong", "strong_base") and r["metric"] == "emp"}
 dup = {(r["dataset"], r["J"]) for r in INF if r["dataset"].endswith("_dupgroup") and r["metric"] == "emp"}
-check({d for d, _ in strong} <= {"cell2cell", "iranian", "orange"} and all(j == "5" for _, j in strong),
-      f"200-trial comparisons use only Cell2Cell/Iranian/Orange and five splits: {sorted(strong)}")
+check({d for d, _ in strong} == {"cell2cell", "iranian", "orange"} and all(j == "5" for _, j in strong),
+      "tuning-budget comparisons (both reference columns) cover Cell2Cell, Iranian and Orange with five splits")
 check({d for d, _ in dup} == {"telco_dupgroup", "iranian_dupgroup", "ecommerce_dupgroup"} and all(j == "5" for _, j in dup),
       "duplicate-group checks cover Telco, Iranian and E-Commerce with five splits")
 check(all(r["J"] == "10" for r in prim), "every primary comparison uses ten splits")

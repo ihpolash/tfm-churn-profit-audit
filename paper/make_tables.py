@@ -275,7 +275,7 @@ macro("replTunedPR", f(summ[(ds, tuned)]["prauc_mean"]))
 lines = []
 for ds in ("cell2cell", "iranian", "orange"):
     for tfm in ("tabpfn_3_5", "tabicl_v2"):
-        a, b = inf.get((ds, "emp", tfm, "tuned")), inf.get((ds, "emp", tfm, "strong"))
+        a, b = inf.get((ds, "emp", tfm, "strong_base")), inf.get((ds, "emp", tfm, "strong"))
         if not (a and b):
             continue
         lines.append(f"{DS_NAME[ds]} & {M_NAME[tfm]} & {M_NAME.get(a['ref'], a['ref'])} & ${num(a, 'rel_pct'):+.1f}\\%$ & "

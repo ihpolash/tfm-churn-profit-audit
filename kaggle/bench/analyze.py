@@ -291,13 +291,19 @@ def inference(M, preds, side):
                 continue
             refsets = {"tuned": mean_cal[met][gb].idxmax(), "tuned_test": mean[met][gb].idxmax()}
             refsets.update({f"vs_{m}": m for m in gb})
-            if any(m in mean[met].index for m in STRONG):
-                refsets["strong"] = mean_cal[met][gb + [m for m in STRONG if m in mean[met].index]].idxmax()
+            only = {}  # refset -> seeds it is restricted to
+            strong = [m for m in STRONG if m in mean[met].index]
+            if strong:  # tuning-budget check: both references chosen and compared on the splits the 200-trial runs cover
+                ss = set(M[(M.dataset == ds) & M.model.isin(strong)].seed)
+                cal_s = M[(M.dataset == ds) & M.seed.isin(ss)].groupby("model")[f"{met}_cal"].mean()
+                refsets["strong_base"], refsets["strong"] = cal_s[gb].idxmax(), cal_s[gb + strong].idxmax()
+                only["strong_base"] = only["strong"] = ss
             if "xgb_default" in mean[met].index:
                 refsets["default"] = "xgb_default"
             for refset, ref in refsets.items():
                 for tfm in [m for m in mean[met].index if is_tfm(m)]:
-                    seeds = sorted(s for (d, m, s) in preds if d == ds and m == tfm and (ds, ref, s) in preds)
+                    seeds = sorted(s for (d, m, s) in preds if d == ds and m == tfm and (ds, ref, s) in preds
+                                   and s in only.get(refset, [s]))
                     if len(seeds) < 2:
                         continue
                     cells = []
@@ -313,7 +319,7 @@ def inference(M, preds, side):
                     pval = float(2 * stats.t.sf(abs(tstat), J - 1))
                     half = stats.t.ppf(0.975, J - 1) * np.sqrt(var)  # corrected-test 95% CI (unadjusted)
                     row = dict(dataset=ds, metric=met, tfm=tfm, ref=ref, ref_set=refset, J=J, ratio=ratio,
-                               mean_diff=d.mean(), rel_pct=100 * d.mean() / abs(mean[met][ref]),
+                               mean_diff=d.mean(), rel_pct=100 * d.mean() / abs(np.mean([fn(y, pb) for y, _, pb, _ in cells])),
                                seeds_positive=int((d > 0).sum()), nb_t=tstat, nb_p=pval,
                                nb_lo=d.mean() - half, nb_hi=d.mean() + half, **{f"diff_s{s}": v for s, v in zip(seeds, d)})
                     if met in ("emp", "prauc") and not is_ablation(tfm) and refset in ("tuned", "default"):

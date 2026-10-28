@@ -206,8 +206,9 @@ The estimand is the difference in a test-set metric between a \tfm and a baselin
 main datasets, \nPrimary{} comparisons in all. The reference GBDT is chosen per dataset and metric as the tuned GBDT
 (LightGBM, XGBoost or CatBoost) with the best mean of that metric on the calibration split over the \nSeeds{} splits; for
 the primary family the metric is EMP. The test set plays no part in choosing it. Two sensitivity
-analyses address the remaining selection: choosing the reference by its test mean instead, and an
-intersection--union test that requires a \tfm to beat each of the three tuned GBDTs separately, taking the largest of
+analyses address the remaining selection. Choosing the reference by its test mean instead is descriptive only: it
+lets the test set influence the baseline, so it shows how much the choice matters but is not independent
+confirmatory evidence. The second is an intersection--union test that requires a \tfm to beat each of the three tuned GBDTs separately, taking the largest of
 the three $p$-values, again Holm-corrected over the \nPrimary{} comparisons. Because random splits share training and test customers, the seed-level differences
 are correlated, and a plain $t$-test over seeds understates their variance. We therefore use the corrected resampled
 $t$-test of Nadeau and Bengio \cite{nadeau2003inference}, which inflates the variance of the mean difference by
@@ -219,7 +220,7 @@ is narrower than the corrected test, and no claim rests on it.
 Everything outside the primary family, including PR-AUC, the ablations and the replication, is exploratory and reported
 with unadjusted $p$.
 
-\subsection{Metrics: three questions}
+\subsection{Metrics: three questions}\label{sec:metrics}
 We keep three questions apart, because a model can answer one well and another badly.
 
 \textbf{Does the model rank churners well?} ROC-AUC, PR-AUC and lift in the top decile.
@@ -229,7 +230,9 @@ highest scores, a contacted churner accepts the offer with probability $\gamma$ 
 $\mathrm{CLV}-\delta-\phi$; a churner who declines costs the contact cost $\phi$; a contacted non-churner takes the
 incentive and costs $\delta+\phi$. EMP is the expected profit per customer at the profit-maximising cutoff, averaged
 over $\gamma\sim\mathrm{Beta}(6,14)$ \cite{verbraken2013emp}, with the standard $\mathrm{CLV}=200$, $\delta=10$ and
-$\phi=1$. Because EMP picks the best cutoff for each model, it depends only on the ranking: a high EMP does not mean the
+$\phi=1$. We report EMP differences both per customer and relative to the baseline, as
+$100\,(\overline{\mathrm{EMP}}_{\mathrm{TFM}}-\overline{\mathrm{EMP}}_{\mathrm{GBDT}})/\overline{\mathrm{EMP}}_{\mathrm{GBDT}}$,
+where bars denote means over the compared splits; a small baseline EMP makes the relative figure large. Because EMP picks the best cutoff for each model, it depends only on the ranking: a high EMP does not mean the
 probabilities can be used directly. We also report e-Profits \cite{manzoor2025eprofits}, which values each customer as
 $\mathrm{CLV}_i = R_i M/(1-\min(r_i,0.995))$ from monthly revenue $R_i$, margin $M=0.3$ and one-month retention
 $r_i = S(T_i+1)/S(T_i)$ from a Kaplan--Meier curve $S$ \cite{kaplan1958nonparametric} fitted on the training split. The
@@ -255,11 +258,13 @@ Figure~\ref{fig:forest}). On Cell2Cell the gain is \empAbsPFNThreeCellTwoCellAbs
 (\empPFNThreeCellTwoCellAbs\%; Holm $p$ \holmPFNThreeCellTwoCell), and on Iranian \empAbsPFNThreeIranianAbs{}
 (\empPFNThreeIranianAbs\%; Holm $p$ = \holmPFNThreeIranian). On Iranian every \tfm is significantly ahead, which reflects
 how far the boosted models fall behind there rather than anything specific to TabPFN. In total, \nHolmSig{} of the \nPrimary{} primary
-comparisons are significant after correction, and none favours the GBDT. Choosing the reference on test means instead
-also gives \nHolmSigTest{}. The two standards answer different questions. The primary family asks whether a \tfm beats
+comparisons are significant after correction, and none favours the GBDT. Choosing the reference on test means, a descriptive check
+that is not confirmatory because it uses the test set, also gives \nHolmSigTest{}. The two standards answer different questions. The primary family asks whether a \tfm beats
 the GBDT that looked best on held-out data; the intersection--union test asks whether it beats every tuned GBDT, and
 only \nIUSig{} comparisons pass it (\iuSigCases). The other Iranian gains depend on which GBDT is the baseline, so we
-claim superiority over tuned tree ensembles as a class only for these \nIUSig.
+claim superiority over tuned tree ensembles as a class only for these \nIUSig. Each of these statements concerns the
+evaluated datasets; the count of significant comparisons is not an estimate of how many operators would gain, and
+statistical significance here is not a measure of commercial value in deployment.
 
 Orange is the case the correction decides. TabPFN-3.5 beats the best tuned GBDT in all \nSeeds{} splits, by
 \empAbsPFNThreeOrangeAbs{} per customer, which is \empPFNThreeOrangeAbs\% of an EMP that is small because only
@@ -277,7 +282,7 @@ Table~\ref{tab:boot}).
 
 \begin{table}[t]
 \caption{Primary family: EMP of each \tfm minus the reference GBDT (best tuned GBDT on the calibration split), per
-customer (CLV units) and relative to the GBDT. CI: 95\% interval of the corrected resampled $t$-test, unadjusted for
+customer (CLV units) and as a percentage of the GBDT's mean EMP over the same splits (Section~\ref{sec:metrics}). CI: 95\% interval of the corrected resampled $t$-test, unadjusted for
 multiplicity. Seeds: splits in which the \tfm is ahead. $p$: corrected test; Holm: adjusted over the \nPrimary{}
 comparisons. All: Holm-adjusted intersection--union $p$ against each of the three tuned GBDTs. Bold: below 0.05.
 Significance is decided only by the Holm-adjusted columns; an unadjusted CI that excludes zero is not a claim.}
@@ -404,10 +409,16 @@ Dataset & Model & Context & AUC & PR-AUC & EMP & $\Delta$EMP & Seeds & $p$ & CIT
 \subsection{Robustness: tuning budget and duplicates}\label{sec:sens}
 
 \textbf{Tuning budget.} Our baselines use 25 to 40 trials, fewer than benchmark practice \cite{erickson2025tabarena}.
-We reran LightGBM and CatBoost with 200 trials each on Cell2Cell, Iranian and Orange for the first five splits. The
-larger budget changed the best GBDT's mean EMP by $\strongDeltaCellTwoCell\%$, $\strongDeltaIranian\%$ and
-$\strongDeltaOrange\%$ respectively, and the \tfm gains were unchanged (Table~\ref{tab:sens}a). On Cell2Cell the
-200-trial LightGBM becomes the reference and TabPFN-3.5 still gains \strongPFNThreeCellTwoCellAbs\% in each of the five splits.
+We reran LightGBM and CatBoost with 200 trials each on Cell2Cell, Iranian and Orange for the first five splits only,
+and compare on those five splits throughout this check: both references are chosen on the calibration split over them,
+and both columns of Table~\ref{tab:sens}a are computed on them. The larger budget changed the best GBDT's mean test EMP
+by $\strongDeltaCellTwoCell\%$, $\strongDeltaIranian\%$ and $\strongDeltaOrange\%$ respectively. On Cell2Cell the
+200-trial LightGBM becomes the reference and TabPFN-3.5 still gains \strongPFNThreeCellTwoCellAbs\% in each of the five
+splits. On Iranian and Orange no 200-trial model beats the existing reference on the calibration split, so the
+reference and the gains are unchanged; this part of the check shows that the extra budget did not produce a better
+baseline, not that a stronger baseline was beaten. The five-split gains differ from the ten-split primary figures
+(for example \strongPFNThreeOrangeAbs\% rather than \empPFNThreeOrangeAbs\% on Orange) because they cover half the
+splits, and their $p$-values are unadjusted.
 
 \textbf{Duplicates.} Removing duplicates could discard legitimate customers. A duplicate group is a set of rows with identical
 features; removal keeps one row per group, discarding the other copies. In E-Commerce every group's copies share the
@@ -419,8 +430,9 @@ each split, so that no twin crosses from context to test. The gains moved by at 
 (Table~\ref{tab:sens}b).
 
 \begin{table}[t]
-\caption{Sensitivity (exploratory). (a) $\Delta$EMP of each \tfm against the best GBDT tuned with 25--40 trials and
-against the best of those and 200-trial LightGBM and CatBoost. (b) $\Delta$EMP with duplicates removed (primary
+\caption{Sensitivity (exploratory). (a) On the first five splits, where the 200-trial runs exist: $\Delta$EMP of each
+\tfm against the best GBDT tuned with 25--40 trials, and against the best of those and 200-trial LightGBM and CatBoost.
+Both references are chosen on the calibration split over the same five splits. (b) $\Delta$EMP with duplicates removed (primary
 protocol) and with duplicates kept but split by duplicate group (five splits). Removed: copies discarded by de-duplication; Confl.:
 duplicate groups whose copies disagree on churn, with the rows they contain. $p$: unadjusted corrected $t$-test for
 the right-hand comparison.}
@@ -557,7 +569,7 @@ comparisons, the study has limited power: the Orange result is consistent in dir
 splits or datasets could move it either way. We cannot claim that TabPFN-3.5's gains generalise to churn in other
 industries, or to operators with millions of customers, where the context would no longer hold the full training set.
 
-The baselines were tuned with 25 to 40 trials; a fivefold budget changed nothing on three datasets, but we did no
+The baselines were tuned with 25 to 40 trials; a fivefold budget, run on five splits of three datasets, changed the reference only on Cell2Cell and no conclusion, but we did no
 feature engineering, which can shift model comparisons \cite{tschalzev2026tabprep}, and we did not record the selected
 hyperparameters. Removing duplicate feature rows is a design choice; the grouped-split check covers it for the three
 affected datasets. The ablations, the sensitivity checks and the replication use five splits.
@@ -597,7 +609,8 @@ metric from those files. Every table, figure and in-text number in this paper is
 without rebuilding the pipeline. The audit checks that regeneration reproduces the committed tables exactly, recomputes
 every corrected $t$-test, Holm adjustment and intersection--union $p$-value from the per-split differences, confirms
 that each reference GBDT is the best on the calibration split, that all runs succeeded with identical and disjoint
-splits, that the robustness checks cover the datasets and splits stated, and that the package versions logged by every
+splits, that the primary family holds exactly the \nPrimary{} stated comparisons, that relative gains use the stated
+denominator, that the robustness checks cover the datasets and splits stated, and that the package versions logged by every
 run match Appendix~\ref{app:repro}. It needs only the Python standard library.
 
 \section*{Declaration on the use of generative AI}
