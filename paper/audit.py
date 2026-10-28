@@ -88,5 +88,99 @@ diff = [k for k, v in splits.items() if len(set(v.values())) != 1]
 check(not diff, f"identical train/calibration/test splits across all models in {len(splits)} dataset-seed cells")
 check(True, "train, calibration and test indices are disjoint (checked for every dataset and seed)")
 
+
+
+# 5. Statistical inference recomputed from the released per-seed differences.
+import math
+
+
+def _betacf(a, b, x):
+    qab, qap, qam, c, d = a + b, a + 1, a - 1, 1.0, 1 - (a + b) * x / (a + 1)
+    d = 1 / d; h = d
+    for m in range(1, 300):
+        m2 = 2 * m
+        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
+        d = 1 / (1 + aa * d); c = 1 + aa / c; h *= d * c
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
+        d = 1 / (1 + aa * d); c = 1 + aa / c; de = d * c; h *= de
+        if abs(de - 1) < 1e-15:
+            break
+    return h
+
+
+def t_two_sided_p(t, df):
+    """Two-sided Student-t p-value via the regularised incomplete beta function."""
+    if math.isinf(t):
+        return 0.0
+    x = df / (df + t * t)
+    a, b = df / 2, 0.5
+    front = math.exp(math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b) + a * math.log(x) + b * math.log(1 - x))
+    return front * _betacf(a, b, x) / a if x < (a + 1) / (a + b + 2) else 1 - front * _betacf(b, a, 1 - x) / b
+
+
+def holm_adjust(ps):
+    order = sorted(range(len(ps)), key=lambda i: ps[i])
+    adj, run = [0.0] * len(ps), 0.0
+    for k, i in enumerate(order):
+        run = max(run, min(1.0, (len(ps) - k) * ps[i])); adj[i] = run
+    return adj
+
+
+INF = list(csv.DictReader(open(A / "inference.csv")))
+fl = lambda r, k: float(r[k]) if r.get(k) not in (None, "") else float("nan")
+worst_t = worst_p = 0.0
+for r in INF:
+    d = [float(r[k]) for k in r if k.startswith("diff_s") and r[k] not in ("", None)]
+    J = len(d); mean = sum(d) / J
+    var = (1 / J + fl(r, "ratio")) * sum((x - mean) ** 2 for x in d) / (J - 1)
+    t = mean / math.sqrt(var) if var > 0 else math.copysign(math.inf, mean)
+    worst_t = max(worst_t, abs(t - fl(r, "nb_t")) / max(1, abs(t)))
+    worst_p = max(worst_p, abs(t_two_sided_p(t, J - 1) - fl(r, "nb_p")))
+check(worst_t < 1e-9 and worst_p < 1e-6,
+      f"corrected t-statistics and p-values of all {len(INF)} comparisons recomputed (max abs p diff {worst_p:.1e})")
+ci_ok = all((fl(r, "nb_p") < 0.05) == (fl(r, "nb_lo") > 0 or fl(r, "nb_hi") < 0) for r in INF if r.get("nb_lo"))
+check(ci_ok, "corrected-test 95% CIs agree with the unadjusted p-values")
+prim = [r for r in INF if r["primary"] == "True"]
+for col, src, fam in (("holm_p", "nb_p", prim), ("iu_holm_p", "iu_p", prim),
+                      ("holm_p", "nb_p", [r for r in INF if r["ref_set"] == "tuned_test" and r.get("holm_p")])):
+    adj = holm_adjust([fl(r, src) for r in fam])
+    check(len(fam) == 20 and max(abs(a - fl(r, col)) for a, r in zip(adj, fam)) < 1e-9,
+          f"Holm adjustment '{col}' recomputed over its family of {len(fam)}")
+vs = defaultdict(list)
+for r in INF:
+    if r["ref_set"].startswith("vs_") and r["metric"] == "emp":
+        vs[(r["dataset"], r["tfm"])].append(r)
+check(all(abs(max(fl(x, "nb_p") for x in vs[(r["dataset"], r["tfm"])]) - fl(r, "iu_p")) < 1e-12 and
+          len(vs[(r["dataset"], r["tfm"])]) == 3 for r in prim),
+      "intersection-union p = worst of the three per-GBDT comparisons, for every primary comparison")
+
+# 6. The reference GBDT is the best on the calibration split, never chosen on test data.
+cal = defaultdict(list)
+for r in csv.DictReader(open(A / "metrics_per_seed.csv")):
+    if r["model"] in ("lgbm", "xgb", "catboost"):
+        cal[(r["dataset"], r["model"])].append(float(r["emp_cal"]))
+ref_ok = all(r["ref"] == max(("lgbm", "xgb", "catboost"), key=lambda m: st.mean(cal[(r["dataset"], m)])) for r in prim)
+check(ref_ok, "every primary reference GBDT is the one with the best mean calibration-split EMP")
+
+# 7. Robustness checks cover exactly the datasets and splits the paper states.
+strong = {(r["dataset"], r["J"]) for r in INF if r["ref_set"] == "strong" and r["metric"] == "emp"
+          and r["ref"] in ("lgbm_200", "catboost_200")}
+dup = {(r["dataset"], r["J"]) for r in INF if r["dataset"].endswith("_dupgroup") and r["metric"] == "emp"}
+check({d for d, _ in strong} <= {"cell2cell", "iranian", "orange"} and all(j == "5" for _, j in strong),
+      f"200-trial comparisons use only Cell2Cell/Iranian/Orange and five splits: {sorted(strong)}")
+check({d for d, _ in dup} == {"telco_dupgroup", "iranian_dupgroup", "ecommerce_dupgroup"} and all(j == "5" for _, j in dup),
+      "duplicate-group checks cover Telco, Iranian and E-Commerce with five splits")
+check(all(r["J"] == "10" for r in prim), "every primary comparison uses ten splits")
+
+# 8. Software versions in the kernel logs match the appendix.
+logs = "".join(e.get("data", "") for p in K.glob("*/*.log") for e in json.load(open(p)))
+vers = defaultdict(set)
+for pkg, v in re.findall(r"\d\d:\d\d:\d\d (tabpfn|tabicl|lightgbm|xgboost|catboost|optuna|scikit-learn|interpret) ([0-9.]+)", logs):
+    vers[pkg].add(v)
+appendix = tex[tex.find("Software &"):tex.find("Hardware &")]
+ok = all(len(v) == 1 and next(iter(v)) in appendix for v in vers.values()) and len(vers) >= 7
+check(ok, "package versions logged by every kernel are unique and match the appendix: "
+      + ", ".join(f"{k} {'/'.join(sorted(v))}" for k, v in sorted(vers.items())))
+
 print(f"\n{'ALL CHECKS PASSED' if not FAIL else f'{len(FAIL)} CHECK(S) FAILED'}")
 sys.exit(1 if FAIL else 0)

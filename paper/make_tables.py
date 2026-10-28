@@ -130,14 +130,21 @@ for ds in MAIN:
         bold = (lambda x: f"\\textbf{{{x}}}") if holm_sig(r) else (lambda x: x)
         lines.append(("\\multirow{4}{*}{" + DS_NAME[ds] + "}" if i == 0 else "")
                      + f" & {M_NAME[tfm]} & ${num(r, 'mean_diff'):+.3f}$ & ${num(r, 'rel_pct'):+.1f}$ & "
-                     f"$[{num(r, 'hier_lo'):+.3f}, {num(r, 'hier_hi'):+.3f}]$ & {r['seeds_positive']}/{r['J']} & "
-                     f"{pfmt(num(r, 'nb_p'))} & {bold(pfmt(num(r, 'holm_p')))} \\\\")
+                     f"$[{num(r, 'nb_lo'):+.3f}, {num(r, 'nb_hi'):+.3f}]$ & {r['seeds_positive']}/{r['J']} & "
+                     f"{pfmt(num(r, 'nb_p'))} & {bold(pfmt(num(r, 'holm_p')))} & "
+                     f"{(lambda x: f'\\textbf{{{x}}}' if num(r, 'iu_holm_p') < 0.05 else x)(pfmt(num(r, 'iu_holm_p')))} \\\\")
     if ds != MAIN[-1]:
         lines.append("\\midrule")
 write("primary.tex", "\n".join(lines) + "\n")
 prim = [r for r in inf.values() if r.get("primary") == "True"]
 macro("nPrimary", str(len(prim)))
 macro("nHolmSig", str(sum(holm_sig(r) for r in prim)))
+macro("nIUSig", str(sum(num(r, "iu_holm_p") < 0.05 for r in prim)))
+test_sel = [r for r in inf.values() if r["ref_set"] == "tuned_test" and r.get("holm_p") not in (None, "")]
+macro("nHolmSigTest", str(sum(num(r, "holm_p") < 0.05 for r in test_sel)))
+macro("nRefChanged", str(sum(inf[(r["dataset"], "emp", r["tfm"], "tuned_test")]["ref"] != r["ref"] for r in prim) // 4))
+sig_cases = lambda col: sorted({f"{M_NAME[r['tfm']]} on {DS_NAME[r['dataset']]}" for r in prim if num(r, col) < 0.05})
+macro("iuSigCases", "; ".join(sig_cases("iu_holm_p")) or "none")
 macro("nSeeds", str(max(int(r["J"]) for r in prim)))
 macro("minHolm", pfmt(min(num(r, "holm_p") for r in prim)))
 best = min(prim, key=lambda r: num(r, "holm_p"))
@@ -157,6 +164,9 @@ for ds in MAIN:
         macro(f"nbp{k}{DS_KEY[ds]}", pfmt(num(r, "nb_p")))
         macro(f"holm{k}{DS_KEY[ds]}", pfmt(num(r, "holm_p")))
         macro(f"seedsPos{k}{DS_KEY[ds]}", f"{r['seeds_positive']}")
+        macro(f"iuHolm{k}{DS_KEY[ds]}", pfmt(num(r, "iu_holm_p")))
+        macro(f"nbLo{k}{DS_KEY[ds]}", f"{num(r, 'nb_lo'):+.3f}")
+        macro(f"nbHi{k}{DS_KEY[ds]}", f"{num(r, 'nb_hi'):+.3f}")
 
 # secondary matrix: PR-AUC (points) and EMP (%) differences, markers as above
 lines = []
@@ -298,7 +308,7 @@ for ds in ("telco", "iranian", "ecommerce"):
         a, b = inf.get((ds, "emp", tfm, "tuned")), inf.get((f"{ds}_dupgroup", "emp", tfm, "tuned"))
         if not (a and b):
             continue
-        lines.append(f"{DS_NAME[ds]} & {dstat['n_dup']} & {dstat['n_conflict_rows']} & "
+        lines.append(f"{DS_NAME[ds]} & {dstat['n_dup']} & {dstat['n_conflict_groups']} ({dstat['n_conflict_rows']}) & "
                      f"{100 * dstat['churn_rate_before']:.1f} / {100 * dstat['churn_rate_after_dedup']:.1f} & {M_NAME[tfm]} & "
                      f"${num(a, 'rel_pct'):+.1f}\\%$ & ${num(b, 'rel_pct'):+.1f}\\%$ & {pfmt(num(b, 'nb_p'))} \\\\")
 if lines:

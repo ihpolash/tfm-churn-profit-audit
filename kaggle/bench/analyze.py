@@ -148,7 +148,10 @@ def main():
         y = side[ds]["y"]; yte, ycal, ytr = y[P["idx_test"]], y[P["idx_cal"]], y[P["idx_train"]]
         pte = P["p_test"]
         row = dict(dataset=ds, model=model, seed=seed, auc=roc_auc_score(yte, pte),
-                   prauc=average_precision_score(yte, pte), lift10=lift10(yte, pte), emp=emp(yte, pte))
+                   prauc=average_precision_score(yte, pte), lift10=lift10(yte, pte), emp=emp(yte, pte),
+                   # calibration-split scores: used only to choose the reference GBDT, never the test set
+                   auc_cal=roc_auc_score(ycal, P["p_cal"]), prauc_cal=average_precision_score(ycal, P["p_cal"]),
+                   emp_cal=emp(ycal, P["p_cal"]))
         cal = calibrators(P["p_cal"], ycal, pte)
         for k, p in cal.items():
             row[f"brier_{k}"] = brier_score_loss(yte, p); row[f"ece_{k}"] = ece(yte, p)
@@ -274,18 +277,22 @@ def main():
 def inference(M, preds, side):
     """Per comparison: per-seed differences on the full test set, Nadeau-Bengio corrected t-test over seeds
     (variance inflated by 1/J + n_test/n_train for overlapping random splits), and a two-level bootstrap that
-    resamples seeds and then customers. Holm is applied within the primary family only."""
+    resamples seeds and then customers. The reference GBDT is chosen on the calibration split ("tuned"); the
+    test-selected reference ("tuned_test") and each tuned GBDT separately ("vs_<model>", combined by an
+    intersection-union test) are sensitivity checks. Holm is applied within each family of 20 comparisons."""
     fns = {"emp": (emp, emp_fast), "prauc": (average_precision_score,) * 2, "auc": (roc_auc_score,) * 2}
     rows = []
     for ds in M.dataset.unique():
         mean = {met: M[M.dataset == ds].groupby("model")[met].mean() for met in fns}
+        mean_cal = {met: M[M.dataset == ds].groupby("model")[f"{met}_cal"].mean() for met in fns}
         for met, (fn, fast) in fns.items():
             gb = [m for m in GBDT if m in mean[met].index]
             if not gb:
                 continue
-            refsets = {"tuned": mean[met][gb].idxmax()}
+            refsets = {"tuned": mean_cal[met][gb].idxmax(), "tuned_test": mean[met][gb].idxmax()}
+            refsets.update({f"vs_{m}": m for m in gb})
             if any(m in mean[met].index for m in STRONG):
-                refsets["strong"] = mean[met][gb + [m for m in STRONG if m in mean[met].index]].idxmax()
+                refsets["strong"] = mean_cal[met][gb + [m for m in STRONG if m in mean[met].index]].idxmax()
             if "xgb_default" in mean[met].index:
                 refsets["default"] = "xgb_default"
             for refset, ref in refsets.items():
@@ -304,10 +311,12 @@ def inference(M, preds, side):
                     var = (1 / J + ratio) * d.var(ddof=1)
                     tstat = d.mean() / np.sqrt(var) if var > 0 else np.inf * np.sign(d.mean())
                     pval = float(2 * stats.t.sf(abs(tstat), J - 1))
-                    row = dict(dataset=ds, metric=met, tfm=tfm, ref=ref, ref_set=refset, J=J, mean_diff=d.mean(),
-                               rel_pct=100 * d.mean() / abs(mean[met][ref]), seeds_positive=int((d > 0).sum()),
-                               nb_t=tstat, nb_p=pval, **{f"diff_s{s}": v for s, v in zip(seeds, d)})
-                    if met in ("emp", "prauc") and not is_ablation(tfm):
+                    half = stats.t.ppf(0.975, J - 1) * np.sqrt(var)  # corrected-test 95% CI (unadjusted)
+                    row = dict(dataset=ds, metric=met, tfm=tfm, ref=ref, ref_set=refset, J=J, ratio=ratio,
+                               mean_diff=d.mean(), rel_pct=100 * d.mean() / abs(mean[met][ref]),
+                               seeds_positive=int((d > 0).sum()), nb_t=tstat, nb_p=pval,
+                               nb_lo=d.mean() - half, nb_hi=d.mean() + half, **{f"diff_s{s}": v for s, v in zip(seeds, d)})
+                    if met in ("emp", "prauc") and not is_ablation(tfm) and refset in ("tuned", "default"):
                         rng = np.random.default_rng(zlib.crc32(f"{ds}|{met}|{tfm}|{ref}|hier".encode()))
                         H = np.empty(BH)
                         for h in range(BH):
@@ -324,14 +333,28 @@ def inference(M, preds, side):
                             row[f"lo_s{s}"], row[f"hi_s{s}"] = np.percentile(ps, [2.5, 97.5])
                     rows.append(row)
     INF = pd.DataFrame(rows)
-    primary = ((INF.metric == "emp") & (INF.ref_set == "tuned") & INF.tfm.isin(BASE_TFMS)
-               & ~INF.dataset.isin(REPLICATION) & ~INF.dataset.map(is_sensitivity))
-    INF["primary"] = primary
-    p = INF.loc[primary, "nb_p"].sort_values()
-    m = len(p)
-    holm = np.minimum(1, np.maximum.accumulate([(m - k) * v for k, v in enumerate(p.values)]))
-    INF.loc[p.index, "holm_p"] = holm
+    family = ((INF.metric == "emp") & INF.tfm.isin(BASE_TFMS) & ~INF.dataset.isin(REPLICATION)
+              & ~INF.dataset.map(is_sensitivity))
+    INF["primary"] = family & (INF.ref_set == "tuned")
+    INF.loc[INF.primary, "holm_p"] = holm(INF.loc[INF.primary, "nb_p"])
+    test_sel = family & (INF.ref_set == "tuned_test")  # sensitivity: reference chosen on test means
+    INF.loc[test_sel, "holm_p"] = holm(INF.loc[test_sel, "nb_p"])
+    # intersection-union: a TFM beats the tuned GBDTs only if it beats each of them; p = max over the three
+    vs = INF[family & INF.ref_set.str.startswith("vs_")]
+    worst = vs.loc[vs.groupby(["dataset", "tfm"]).nb_p.idxmax()].set_index(["dataset", "tfm"])
+    keys = list(zip(INF.dataset, INF.tfm))
+    INF.loc[INF.primary, "iu_p"] = [worst.loc[k, "nb_p"] for k, prim in zip(keys, INF.primary) if prim]
+    INF.loc[INF.primary, "iu_ref"] = [worst.loc[k, "ref"] for k, prim in zip(keys, INF.primary) if prim]
+    INF.loc[INF.primary, "iu_holm_p"] = holm(INF.loc[INF.primary, "iu_p"])
     return INF
+
+
+def holm(p):
+    """Holm step-down adjusted p-values for a pandas Series, returned in the original order."""
+    order = p.sort_values()
+    m = len(order)
+    adj = np.minimum(1, np.maximum.accumulate([(m - k) * v for k, v in enumerate(order.values)]))
+    return pd.Series(adj, index=order.index).reindex(p.index)
 
 
 def figures(INF, M, preds, side):
@@ -350,17 +373,17 @@ def figures(INF, M, preds, side):
     for k, r in enumerate(P.itertuples()):
         yy = -k - 0.6 * r.o
         filled = r.holm_p < 0.05
-        ax.errorbar(r.mean_diff, yy, xerr=[[r.mean_diff - r.hier_lo], [r.hier_hi - r.mean_diff]], fmt="o",
+        ax.errorbar(r.mean_diff, yy, xerr=[[r.mean_diff - r.nb_lo], [r.nb_hi - r.mean_diff]], fmt="o",
                     color="#1f4e79", mfc="#1f4e79" if filled else "white", ms=5, capsize=2, lw=1)
         yt.append(yy); yl.append(f"{r.dataset.capitalize() if r.dataset != 'cell2cell' else 'Cell2Cell'} · {names[r.tfm]}")
     ax.axvline(0, color="grey", lw=0.8)
     ax.set_yticks(yt); ax.set_yticklabels(yl, fontsize=7)
     ax.set_xlabel("EMP difference to best tuned GBDT (per customer, CLV units)")
-    ax.set_title("Filled: Holm-adjusted p < 0.05; bars: two-level bootstrap 95% interval", fontsize=8)
+    ax.set_title("Filled: Holm-adjusted p < 0.05; bars: corrected-test 95% CI (unadjusted)", fontsize=8)
     fig.tight_layout(); fig.savefig(f"{OUT}/figures/forest_emp.pdf"); plt.close(fig)
 
     ds = "orange"
-    gb = M[(M.dataset == ds) & M.model.isin(GBDT)].groupby("model").emp.mean().idxmax()
+    gb = M[(M.dataset == ds) & M.model.isin(GBDT)].groupby("model").emp_cal.mean().idxmax()
     fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.6), sharey=True)
     for ax, model in zip(axes, [gb, "tabicl_v2", "tabpfn_3_5"]):
         for kind, style in (("raw", "o-"), ("isotonic", "s--")):

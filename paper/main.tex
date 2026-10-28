@@ -1,8 +1,13 @@
-\documentclass[runningheads]{llncs}
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.6cm]{geometry}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs,multirow,array}
 \usepackage{graphicx}
+\usepackage{caption}
+\captionsetup[table]{position=top,skip=6pt}
 \usepackage[hidelinks]{hyperref}
 \usepackage{xspace}
 \input{tables/numbers.tex}
@@ -16,11 +21,8 @@
 
 \title{Do Tabular Foundation Models Pay Off for Churn?\\
 A Profit-, Calibration- and Tuning-Aware Re-evaluation}
-\titlerunning{Do Tabular Foundation Models Pay Off for Churn?}
-
-\author{Ismail Hossain Polas}
-\authorrunning{I.~H.~Polas}
-\institute{Jahangirnagar University\\ \email{ismailhossainpolash@gmail.com}}
+\author{Ismail Hossain Polas\\ Jahangirnagar University\\ \texttt{ismailhossainpolash@gmail.com}}
+\date{October 28, 2026}
 
 \maketitle
 
@@ -35,11 +37,10 @@ a split-aware test and Holm correction over \nPrimary{} pre-declared comparisons
 EMP than the best tuned GBDT on Cell2Cell (\empPFNThreeCellTwoCellAbs\%) and Iranian (\empPFNThreeIranianAbs\%). On
 Orange it wins in all \nSeeds{} splits (\empPFNThreeOrangeAbs\%), but the gain does not survive correction. TabICL v2,
 the earlier benchmark's leader, is significant only on Iranian and underpredicts Orange churn by
-\citlICLOrangeAbs{} points on a \rateOrange\% base rate. A fivefold larger tuning budget and a duplicate-aware split leave
-these conclusions unchanged. Retuning the baseline cuts the earlier headline gap from \replICLDefaultAbs{} to
+\citlICLOrangeAbs{} points on a \rateOrange\% base rate. On the datasets and splits where we tested them, a fivefold larger
+tuning budget and a duplicate-aware split leave these conclusions unchanged. Retuning the baseline cuts the earlier headline gap from \replICLDefaultAbs{} to
 \replICLTunedAbs{} PR-AUC points without closing it. The licence of TabPFN-3.5's weights, not scoring cost, is what
 stands between its gains and production use.
-\keywords{Customer churn \and Tabular foundation models \and Expected maximum profit \and Calibration \and Benchmarking}
 \end{abstract}
 
 \section{Introduction}
@@ -59,10 +60,10 @@ They concluded that \tfms ``collectively and decisively outperform'' classical, 
 TabICL v2 ahead of XGBoost by up to 9.23 PR-AUC points.
 
 That study was the first to bring \tfms to churn, and it leaves three questions open. Its XGBoost and random forest
-used library-default hyperparameters \cite[Sect.~3.2]{seyedzadeh2026churn}, so part of the reported gap may be a tuning
+used library-default hyperparameters \cite[Section~3.2]{seyedzadeh2026churn}, so part of the reported gap may be a tuning
 gap. Its metrics were F1, ROC-AUC, PR-AUC and log loss; its financial estimate scaled the PR-AUC gap by a retention rate
 rather than evaluating a campaign. Finally, its own discussion reads TabICL v2's lead as ``operational \ldots\ rather
-than as a statistically decisive metric lead'' \cite[Sect.~4.2]{seyedzadeh2026churn}, which leaves the size of the lead
+than as a statistically decisive metric lead'' \cite[Section~4.2]{seyedzadeh2026churn}, which leaves the size of the lead
 unsettled.
 
 We argue that the practical value of a \tfm for churn depends on the model generation, the dataset, the decision policy
@@ -75,20 +76,21 @@ multiple comparisons. The contributions are:
 \item \textbf{A tuned, profit-aware comparison.} TabPFN-3.5 earns significantly more EMP than the best tuned GBDT on
   Cell2Cell and Iranian after Holm correction, wins in every split on Orange without surviving correction, and is
   never worse beyond noise. TabICL v2 and TabPFN-2.5 are significant only on Iranian. On the two fictional datasets,
-  Telco and Maven, no difference survives correction (Sect.~\ref{sec:rq1}).
+  Telco and Maven, no difference survives correction (Section~\ref{sec:rq1}).
 \item \textbf{Ranking, profit and probabilities kept apart.} Profit metrics rerank models only when they are tied
-  (Sect.~\ref{sec:rq2}). Calibration matters for one model on one dataset: raw TabICL v2 loses
-  \regICLOrangeRaw\% of attainable campaign profit on Orange at a fixed threshold (Sect.~\ref{sec:rq3}).
+  (Section~\ref{sec:rq2}). Calibration matters for one model on one dataset: raw TabICL v2 loses
+  \regICLOrangeRaw\% of attainable campaign profit on Orange at a fixed threshold (Section~\ref{sec:rq3}).
 \item \textbf{Robustness to the obvious objections.} A balanced context hurts rather than helps when the training set
-  fits (Sect.~\ref{sec:rq4}). A fivefold larger tuning budget and a split that keeps duplicates without leaking them
-  change no conclusion (Sect.~\ref{sec:sens}).
+  fits (Section~\ref{sec:rq4}). A fivefold larger tuning budget (on the three real-operator datasets) and a split that
+  keeps duplicates without leaking them (on the three datasets that had any) change no conclusion within the five
+  splits each check covers (Section~\ref{sec:sens}).
 \item \textbf{A bounded replication.} On the earlier benchmark's headline dataset, tuning removes about a third of
-  TabICL v2's PR-AUC lead, and the rest survives (Sect.~\ref{sec:rq5}).
+  TabICL v2's PR-AUC lead, and the rest survives (Section~\ref{sec:rq5}).
 \item \textbf{Deployment terms.} Cached scoring is cheap; the TabPFN weights' licence, which excludes production use, is
-  the binding constraint (Sect.~\ref{sec:rq6}).
+  the binding constraint (Section~\ref{sec:rq6}).
 \end{enumerate}
 The code, every per-split prediction, and the generator and audit for every number in this paper are released
-(Sect.~\ref{sec:availability}).
+(Section~\ref{sec:availability}).
 
 \section{Related Work}
 
@@ -149,7 +151,7 @@ repository \cite{iranian}, and Orange from the KDD Cup 2009 churn task \cite{guy
 OpenML (dataset 1112). IBM Telco \cite{telco} and Maven \cite{maven} are fictional teaching datasets; we keep them
 because prior churn studies use them, including both \cite{manzoor2025eprofits} and \cite{seyedzadeh2026churn}, and
 because a gap between real and fictional data would itself be informative. E-Commerce \cite{ecommerce}, the dataset on
-which \cite{seyedzadeh2026churn} reported its largest gain, serves only as a replication check (Sect.~\ref{sec:rq5}) and
+which \cite{seyedzadeh2026churn} reported its largest gain, serves only as a replication check (Section~\ref{sec:rq5}) and
 is excluded from all cross-dataset summaries.
 
 \begin{table}[t]
@@ -173,7 +175,7 @@ is ``Joined'', whose outcome is not yet observed, and the two columns that recor
 remove exact duplicate feature rows, keeping the first, because an in-context learner can otherwise find a test
 customer's twin in its own context. This removed \dupTelco{} rows (\dupPctTelco\%) from Telco, \dupIranian{}
 (\dupPctIranian\%) from Iranian and \dupECommerce{} (\dupPctECommerce\%) from E-Commerce; the other datasets had none.
-The removal changed churn rates by at most \maxChurnShift{} points, and Sect.~\ref{sec:sens} repeats the analysis with duplicates
+The removal changed churn rates by at most \maxChurnShift{} points, and Section~\ref{sec:sens} repeats the analysis with duplicates
 kept.
 
 \subsection{Models}
@@ -197,14 +199,18 @@ the test split. GBDTs ran on Kaggle CPU sessions and \tfms on a single NVIDIA T4
 
 The estimand is the difference in a test-set metric between a \tfm and a baseline, averaged over random splits. The
 \emph{primary family} is fixed in advance: EMP, each of the four \tfms against the best tuned GBDT on each of the five
-main datasets, \nPrimary{} comparisons in all. The reference GBDT is chosen per dataset and metric by its mean over
-seeds, which favours the baseline. Because random splits share training and test customers, the seed-level differences
+main datasets, \nPrimary{} comparisons in all. The reference GBDT is chosen per dataset and metric as the tuned GBDT
+with the best mean score on the calibration split, so the test set plays no part in choosing it. Two sensitivity
+analyses address the remaining selection: choosing the reference by its test mean instead, and an
+intersection--union test that requires a \tfm to beat each of the three tuned GBDTs separately, taking the largest of
+the three $p$-values, again Holm-corrected over the \nPrimary{} comparisons. Because random splits share training and test customers, the seed-level differences
 are correlated, and a plain $t$-test over seeds understates their variance. We therefore use the corrected resampled
 $t$-test of Nadeau and Bengio \cite{nadeau2003inference}, which inflates the variance of the mean difference by
 $1/J + n_\mathrm{test}/n_\mathrm{train}$ for $J$ splits, and apply Holm's correction \cite{holm1979simple} across the
-primary family. We call a primary comparison significant when its Holm-adjusted $p$ is below 0.05. As a descriptive
-interval we report a two-level bootstrap that resamples seeds and then test customers (1,000 resamples). It does not
-model the overlap between splits, so it is narrower than the corrected test, and we never base a claim on it alone.
+primary family. We call a primary comparison significant when its Holm-adjusted $p$ is below 0.05, and report the
+corrected test's 95\% confidence interval, which is unadjusted for multiplicity. A two-level bootstrap that resamples
+seeds and then test customers is computed as a descriptive check; it does not model the overlap between splits, so it
+is narrower than the corrected test, and no claim rests on it.
 Everything outside the primary family, including PR-AUC, the ablations and the replication, is exploratory and reported
 with unadjusted $p$.
 
@@ -240,11 +246,13 @@ Each model is evaluated raw and after isotonic regression \cite{zadrozny2002tran
 \subsection{Do foundation models earn more profit than tuned GBDTs?}\label{sec:rq1}
 
 TabPFN-3.5 earns significantly more EMP than the best tuned GBDT on two of five datasets (Table~\ref{tab:primary},
-Fig.~\ref{fig:forest}). On Cell2Cell the gain is \empAbsPFNThreeCellTwoCellAbs{} per customer
+Figure~\ref{fig:forest}). On Cell2Cell the gain is \empAbsPFNThreeCellTwoCellAbs{} per customer
 (\empPFNThreeCellTwoCellAbs\%; Holm $p$ \holmPFNThreeCellTwoCell), and on Iranian \empAbsPFNThreeIranianAbs{}
 (\empPFNThreeIranianAbs\%; Holm $p$ = \holmPFNThreeIranian). On Iranian every \tfm is significantly ahead, which reflects
 how far the boosted models fall behind there rather than anything specific to TabPFN. In total, \nHolmSig{} of the \nPrimary{} primary
-comparisons are significant after correction, and none favours the GBDT.
+comparisons are significant after correction, and none favours the GBDT. The selection of the reference does not
+drive this: choosing it on test means instead gives \nHolmSigTest{} significant comparisons, and the stricter
+intersection--union test against all three tuned GBDTs gives \nIUSig{} (\iuSigCases).
 
 Orange is the case the correction decides. TabPFN-3.5 beats the best tuned GBDT in all \nSeeds{} splits, by
 \empAbsPFNThreeOrangeAbs{} per customer, which is \empPFNThreeOrangeAbs\% of an EMP that is small because only
@@ -260,14 +268,16 @@ lineage, yet only the latter separates from the GBDTs on Cell2Cell, which matche
 Table~\ref{tab:boot}).
 
 \begin{table}[t]
-\caption{Primary family: EMP of each \tfm minus the best tuned GBDT, per customer (CLV units) and relative to the
-GBDT. Interval: two-level bootstrap (descriptive). Seeds: splits in which the \tfm is ahead. $p$: corrected resampled
-$t$-test; Holm: adjusted over the \nPrimary{} comparisons (bold if below 0.05).}
+\caption{Primary family: EMP of each \tfm minus the reference GBDT (best tuned GBDT on the calibration split), per
+customer (CLV units) and relative to the GBDT. CI: 95\% interval of the corrected resampled $t$-test, unadjusted for
+multiplicity. Seeds: splits in which the \tfm is ahead. $p$: corrected test; Holm: adjusted over the \nPrimary{}
+comparisons. All: Holm-adjusted intersection--union $p$ against each of the three tuned GBDTs. Bold: below 0.05.
+Significance is decided only by the Holm-adjusted columns; an unadjusted CI that excludes zero is not a claim.}
 \label{tab:primary}
 \centering\scriptsize
-\begin{tabular}{@{}llrrcccc@{}}
+\begin{tabular}{@{}llrrccccc@{}}
 \toprule
-Dataset & \tfm & $\Delta$EMP & \% & 95\% interval & Seeds & $p$ & Holm \\
+Dataset & \tfm & $\Delta$EMP & \% & 95\% CI (corrected) & Seeds & $p$ & Holm & All \\
 \midrule
 \tabin{tables/primary.tex}
 \bottomrule
@@ -277,8 +287,9 @@ Dataset & \tfm & $\Delta$EMP & \% & 95\% interval & Seeds & $p$ & Holm \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.78\textwidth]{figures/forest_emp.pdf}
-\caption{EMP difference between each \tfm and the best tuned GBDT, per customer, with two-level bootstrap intervals
-over \nSeeds{} splits. Filled markers: significant after Holm correction across the \nPrimary{} comparisons.}
+\caption{EMP difference between each \tfm and the reference GBDT, per customer, with corrected-test 95\% intervals
+(unadjusted) over \nSeeds{} splits. Filled markers: significant after Holm correction across the \nPrimary{}
+comparisons.}
 \label{fig:forest}
 \end{figure}
 
@@ -319,7 +330,7 @@ profit without recalibration, and isotonic or Platt scaling changes that loss by
 points (Table~\ref{tab:cal}).
 
 Orange is the exception, and one model drives it. Raw TabICL v2 predicts \citlICLOrangeAbs{} percentage points too
-little churn on a base rate of \rateOrange\% (Fig.~\ref{fig:rel}), and the policy built on those probabilities loses
+little churn on a base rate of \rateOrange\% (Figure~\ref{fig:rel}), and the policy built on those probabilities loses
 \regICLOrangeRaw\% of attainable profit. Isotonic regression cuts the loss to \regICLOrangeIso\% and Platt scaling to
 \regICLOrangePlatt\%. TabICL v2 also underpredicts on Cell2Cell (by \citlICLCellTwoCellAbs{} points), as does TabPFN-2.5
 (\citlPFNTwoCellTwoCellAbs). TabPFN-3.5's calibration-in-the-large stays within $\pm$\maxAbsCitlPFNThree{} points on
@@ -390,9 +401,11 @@ larger budget changed the best GBDT's mean EMP by $\strongDeltaCellTwoCell\%$, $
 $\strongDeltaOrange\%$ respectively, and the \tfm gains were unchanged (Table~\ref{tab:sens}a). On Cell2Cell the
 200-trial LightGBM becomes the reference and TabPFN-3.5 still gains \strongPFNThreeCellTwoCellAbs\% in each of the five splits.
 
-\textbf{Duplicates.} Removing duplicates could discard legitimate customers. Among the removed rows, E-Commerce had no
-conflicting labels, while Iranian had \conflictGroupsIranian{} duplicate groups (\conflictRowsIranian{} rows) and Telco
-\conflictGroupsTelco{} (\conflictRowsTelco{} rows) whose copies disagree on churn; removal changed churn rates by at most
+\textbf{Duplicates.} Removing duplicates could discard legitimate customers. A duplicate group is a set of rows with identical
+features; removal keeps one row per group, discarding the other copies. In E-Commerce every group's copies share the
+same churn label. In Iranian, \conflictGroupsIranian{} groups (\conflictRowsIranian{} rows in total) and in Telco
+\conflictGroupsTelco{} groups (\conflictRowsTelco{} rows) contain copies with different labels, so keeping the first
+copy assigns them one label; removal changed churn rates by at most
 \maxChurnShift{} points. We repeated the analysis keeping every row but assigning all copies of a feature vector to the same side of
 each split, so that no twin crosses from context to test. The gains moved by at most \maxDupShift{} points on all three datasets
 (Table~\ref{tab:sens}b).
@@ -400,7 +413,8 @@ each split, so that no twin crosses from context to test. The gains moved by at 
 \begin{table}[t]
 \caption{Sensitivity (exploratory). (a) $\Delta$EMP of each \tfm against the best GBDT tuned with 25--40 trials and
 against the best of those and 200-trial LightGBM and CatBoost. (b) $\Delta$EMP with duplicates removed (primary
-protocol) and with duplicates kept but split by duplicate group (five splits). $p$: unadjusted corrected $t$-test for
+protocol) and with duplicates kept but split by duplicate group (five splits). Removed: copies discarded by de-duplication; Confl.:
+duplicate groups whose copies disagree on churn, with the rows they contain. $p$: unadjusted corrected $t$-test for
 the right-hand comparison.}
 \label{tab:sens}
 \centering\scriptsize
@@ -414,14 +428,14 @@ Dataset & \tfm & Ref.\ (25--40 trials) & $\Delta$EMP & Ref.\ (incl.\ 200 trials)
 \end{tabular}
 
 \medskip
-\begin{tabular}{@{}lrrclrrc@{}}
+{\setlength{\tabcolsep}{4.5pt}\begin{tabular}{@{}lrrclrrc@{}}
 \toprule
 \multicolumn{8}{@{}l}{\emph{(b) Duplicates}} \\
-Dataset & Dup. & Confl. & Churn \% before / after & \tfm & Dedup. & Grouped & $p$ \\
+Dataset & Removed & Confl.\ groups (rows) & Churn \% (before/after) & \tfm & Dedup. & Grouped & $p$ \\
 \midrule
 \tabin{tables/dupgroup.tex}
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Does the earlier headline survive tuning?}\label{sec:rq5}
@@ -485,7 +499,7 @@ The binding constraint is the licence. The TabPFN-3.5 and TabPFN-2.5 weights are
 licences that forbid using the model, its derivatives ``or any data produced by'' the model ``for any commercial or
 production purposes'' \cite{tabpfn35license,tabpfn25license}; the licences define outputs to include predictions,
 scores and probabilities. The TabPFN-3.5 report states the practical consequence: outputs may not be used ``as inputs
-to internal commercial decision-making'' without a commercial licence \cite[Sect.~4]{priorlabs2026tabpfn35}. The
+to internal commercial decision-making'' without a commercial licence \cite[Section~4]{priorlabs2026tabpfn35}. The
 TabICL v2 weights are BSD-3 licensed \cite{tabiclweights}. These terms were read on 2026-10-28 and may change. An
 operator therefore faces a trade-off that our results make concrete: the model with the most consistent gains needs a
 commercial agreement, and the openly licensed one is significantly better than a tuned GBDT on only one of five
@@ -552,7 +566,7 @@ and TabPFN-2.5 are rarely distinguishable from a tuned GBDT, and TabICL v2 needs
 can drive a campaign. Profit metrics confirm clear winners and reshuffle ties. We release the pipeline and every
 per-split prediction so that these conclusions can be re-checked as models and licences change.
 
-\section*{Data and Code Availability}\label{sec:availability}
+\section*{Data and code availability}\label{sec:availability}
 \begin{sloppypar}
 The version of the code and results described here is archived on Zenodo as release v1.1
 (\url{https://doi.org/10.5281/zenodo.23696051}) and maintained at
@@ -564,7 +578,17 @@ or attributed use only. The labels needed to recompute metrics from the predicti
 sources by the released code.
 \end{sloppypar}
 
-\section*{Declaration on the Use of Generative AI}
+\section*{Reproducibility}
+Every model run writes its predictions, split indices, timing and package versions; the analysis recomputes every
+metric from those files. Every table, figure and in-text number in this paper is generated by
+\texttt{paper/make\_tables.py} from the released analysis outputs, and \texttt{paper/audit.py} re-derives them
+without rebuilding the pipeline. The audit checks that regeneration reproduces the committed tables exactly, recomputes
+every corrected $t$-test, Holm adjustment and intersection--union $p$-value from the per-split differences, confirms
+that each reference GBDT is the best on the calibration split, that all runs succeeded with identical and disjoint
+splits, that the robustness checks cover the datasets and splits stated, and that the package versions logged by every
+run match Appendix~\ref{app:repro}. It needs only the Python standard library.
+
+\section*{Declaration on the use of generative AI}
 The author used an AI assistant (Claude, Anthropic) for implementation and execution of the experiment code, for
 literature search and reference checking, for table and figure generation, and for drafting and editing this
 manuscript. The research question was chosen by the author; the benchmark design, evaluation protocol and
@@ -575,7 +599,7 @@ computed from the released per-split predictions, and an audit notebook re-deriv
 reference was checked against its primary source or an authoritative index. The author takes full responsibility for
 all content of this paper, irrespective of how it was drafted.
 
-\bibliographystyle{splncs04}
+\bibliographystyle{plainnat}
 \bibliography{references}
 
 \appendix
@@ -591,11 +615,11 @@ early stopping after 100 rounds (up to 3,000 trees), refit on the full training 
 Software & tabpfn 9.2.0 (TabPFN-2.5, 3.5, 3.5-Fast); tabicl 2.2.0 (checkpoint 2026-02-12); lightgbm 4.6.0; xgboost 3.4.1;
 catboost 1.2.10; interpret 0.7.8; optuna 5.0.0; scikit-learn 1.6.1; torch 2.11.0 (CUDA 12.8) \\
 Hardware & Kaggle: NVIDIA T4 (16\,GB) for \tfms; CPU sessions for all other models \\
-LightGBM & 40 trials (200 in Sect.~\ref{sec:sens}); learning rate $[0.005, 0.1]$ log; leaves $[8, 128]$ log; min child
+LightGBM & 40 trials (200 in Section~\ref{sec:sens}); learning rate $[0.005, 0.1]$ log; leaves $[8, 128]$ log; min child
 samples $[5, 200]$ log; subsample $[0.5, 1]$; column sample $[0.3, 1]$; L2 $[10^{-3}, 10]$ log \\
 XGBoost & 40 trials; learning rate $[0.005, 0.1]$ log; depth $[3, 10]$; min child weight $[0.5, 50]$ log; subsample
 $[0.5, 1]$; column sample $[0.3, 1]$; L2 $[10^{-3}, 10]$ log \\
-CatBoost & 25 trials (200 in Sect.~\ref{sec:sens}); learning rate $[0.01, 0.2]$ log; depth $[4, 10]$; L2 $[1, 30]$
+CatBoost & 25 trials (200 in Section~\ref{sec:sens}); learning rate $[0.01, 0.2]$ log; depth $[4, 10]$; L2 $[1, 30]$
 log; random strength $[0.1, 10]$ log; bagging temperature $[0, 1]$ \\
 EBM, LR & defaults; LR with one-hot encoding (up to 30 categories), median imputation with missing indicators, scaling \\
 \bottomrule
