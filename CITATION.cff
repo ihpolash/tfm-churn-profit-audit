@@ -8,9 +8,9 @@ authors:
     email: ismailhossainpolash@gmail.com
 license: MIT
 repository-code: "https://github.com/ihpolash/tfm-churn-profit-audit"
-version: "1.3"
+version: "1.4"
 doi: "10.5281/zenodo.23738816"
-date-released: "2026-10-28"
+date-released: "2026-10-29"
 preferred-citation:
   type: article
   title: "Do Tabular Foundation Models Pay Off for Churn? A Profit-, Calibration- and Tuning-Aware Re-evaluation"
