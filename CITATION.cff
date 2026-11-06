@@ -13,7 +13,7 @@ doi: "10.5281/zenodo.23750936"
 date-released: "2026-10-29"
 preferred-citation:
   type: article
-  title: "Tabular Foundation Models versus Tuned Gradient Boosting for Telecom Churn: A Profit- and Calibration-Aware Evaluation"
+  title: "Tabular Foundation Models vs Tuned Gradient Boosting for Telecom Churn: A Profit and Calibration Aware Evaluation"
   authors:
     - family-names: Polas
       given-names: Ismail Hossain
