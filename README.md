@@ -1,6 +1,6 @@
 # Tabular Foundation Models vs Tuned Gradient Boosting for Telecom Churn
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23750936.svg)](https://doi.org/10.5281/zenodo.23750936)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24015719.svg)](https://doi.org/10.5281/zenodo.24015719)
 
 Code, per-split predictions and paper source for **"Tabular Foundation Models vs Tuned Gradient Boosting for
 Telecom Churn: A Profit- and Calibration-Aware Evaluation"** (Ismail Hossain Polas, Jahangirnagar University). The paper PDF is
