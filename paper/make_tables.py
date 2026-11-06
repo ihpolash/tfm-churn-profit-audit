@@ -207,10 +207,11 @@ reg = {(r["dataset"], r["model"]): r for r in rows("calibration_policy_regret.cs
 lines = []
 for ds in MAIN:
     gb = best_ref[(ds, "emp")]
-    for i, m in enumerate([gb, "tabicl_v2", "tabpfn_2_5", "tabpfn_3_5"]):
+    for i, m in enumerate([gb, "tabicl_v2", "tabpfn_2_5", "tabpfn_3_5", "tabpfn_3_5_fast"]):
         s, g = summ[(ds, m)], reg[(ds, m)]
-        lines.append(("\\multirow{4}{*}{" + DS_NAME[ds] + "}" if i == 0 else "") +
-                     f" & {M_NAME[m]} & ${100 * float(s['citl_raw_mean']):+.1f}$ & {f(s['ece_raw_mean'])} & {f(s['ece_iso_mean'])}"
+        lines.append(("\\multirow{5}{*}{" + DS_NAME[ds] + "}" if i == 0 else "") +
+                     f" & {M_NAME[m]} & ${100 * float(s['citl_raw_mean']):+.1f}$ & {f(s['brier_raw_mean'], 4)}"
+                     f" & {f(s['ece_raw_mean'])} & {f(s['ece_iso_mean'])}"
                      f" & {100 * float(g['regret_raw']):.1f} & {100 * float(g['regret_iso']):.1f} & {100 * float(g['regret_platt']):.1f} \\\\")
     if ds != MAIN[-1]:
         lines.append("\\midrule")
@@ -219,6 +220,9 @@ for ds in MAIN:
     for m, k in (("tabicl_v2", "ICL"), ("tabpfn_3_5", "PFNThree"), ("tabpfn_2_5", "PFNTwo")):
         macro(f"citl{k}{DS_KEY[ds]}", f"{100 * float(summ[(ds, m)]['citl_raw_mean']):+.1f}")
 macro("maxAbsCitlPFNThree", f"{max(abs(100 * float(summ[(ds, 'tabpfn_3_5')]['citl_raw_mean'])) for ds in MAIN):.1f}")
+macro("maxAbsCitlPFNFast", f"{max(abs(100 * float(summ[(ds, 'tabpfn_3_5_fast')]['citl_raw_mean'])) for ds in MAIN):.1f}")
+for col, k in (("brier_raw_mean", "Brier"), ("ece_raw_mean", "ECE")):  # datasets where TabPFN-3.5 is lowest among all main models
+    macro(f"n{k}BestPFNThree", str(sum(min(MODELS, key=lambda m: float(summ[(ds, m)][col])) == "tabpfn_3_5" for ds in MAIN)))
 calm = [r for (ds, m), r in reg.items() if ds in MAIN and ds != "orange" and m in MODELS]
 macro("maxRegretShiftNonOrange", f"{100 * max(max(abs(float(r['regret_raw']) - float(r['regret_iso'])), abs(float(r['regret_raw']) - float(r['regret_platt']))) for r in calm):.1f}")
 macro("maxRawRegretNonOrange", f"{100 * max(float(r['regret_raw']) for r in calm):.1f}")

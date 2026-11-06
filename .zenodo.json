@@ -1,11 +1,22 @@
 {
-  "title": "tfm-churn-profit-audit: code, per-split predictions and paper for \"Tabular Foundation Models vs Tuned Gradient Boosting for Telecom Churn: A Profit and Calibration Aware Evaluation\"",
+  "title": "tfm-churn-profit-audit: code, per-split predictions and paper for \"Tabular Foundation Models vs Tuned Gradient Boosting for Telecom Churn: A Profit- and Calibration-Aware Evaluation\"",
   "upload_type": "software",
-  "description": "<p>Code, released per-split predictions and LaTeX source for the paper <em>Tabular Foundation Models vs Tuned Gradient Boosting for Telecom Churn: A Profit and Calibration Aware Evaluation</em>. The study compares TabPFN-2.5, TabPFN-3.5, TabPFN-3.5-Fast and TabICL v2 with Optuna-tuned LightGBM, XGBoost and CatBoost on five public telecom churn datasets. Models are scored on ranking metrics, expected maximum profit (EMP), e-Profits, a fixed-threshold campaign policy, calibration and scoring time, with paired-bootstrap intervals. The archive contains the Kaggle prediction and analysis code (as scripts and notebooks), the predictions and split indices of all 315 runs, the analysis outputs, and the manuscript with its table generator and audit. Dataset values are not redistributed.</p>",
+  "description": "<p>Code, released per-split predictions and LaTeX source for the paper <em>Tabular Foundation Models vs Tuned Gradient Boosting for Telecom Churn: A Profit- and Calibration-Aware Evaluation</em>. The study compares TabPFN-2.5, TabPFN-3.5, TabPFN-3.5-Fast and TabICL v2 with Optuna-tuned LightGBM, XGBoost and CatBoost on five public telecom churn datasets over ten seeded splits, plus an E-Commerce replication. Models are scored on ranking metrics, expected maximum profit (EMP), e-Profits, a fixed-threshold campaign policy, calibration and scoring time. Inference uses the Nadeau-Bengio corrected resampled t-test with Holm correction over 20 pre-declared comparisons and an intersection-union test against all three tuned GBDTs. The archive contains the Kaggle prediction and analysis code (as scripts and notebooks), the predictions and split indices of all 685 runs, the analysis outputs, and the manuscript with its table generator and a standard-library audit that re-derives every table and number. Dataset values are not redistributed.</p>",
   "creators": [
-    {"name": "Polas, Ismail Hossain", "affiliation": "Jahangirnagar University"}
+    {
+      "name": "Polas, Ismail Hossain",
+      "affiliation": "Jahangirnagar University"
+    }
   ],
   "license": "MIT",
-  "keywords": ["customer churn", "tabular foundation models", "TabPFN", "TabICL", "expected maximum profit", "calibration", "benchmark"],
+  "keywords": [
+    "customer churn",
+    "tabular foundation models",
+    "TabPFN",
+    "TabICL",
+    "expected maximum profit",
+    "calibration",
+    "benchmark"
+  ],
   "access_right": "open"
 }

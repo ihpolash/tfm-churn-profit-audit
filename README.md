@@ -3,7 +3,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23750936.svg)](https://doi.org/10.5281/zenodo.23750936)
 
 Code, per-split predictions and paper source for **"Tabular Foundation Models vs Tuned Gradient Boosting for
-Telecom Churn: A Profit and Calibration Aware Evaluation"** (Ismail Hossain Polas, Jahangirnagar University). The paper PDF is
+Telecom Churn: A Profit- and Calibration-Aware Evaluation"** (Ismail Hossain Polas, Jahangirnagar University). The paper PDF is
 [`paper/main.pdf`](paper/main.pdf); arXiv link to follow.
 
 We compare four tabular foundation models (TabPFN-2.5, TabPFN-3.5, TabPFN-3.5-Fast, TabICL v2) against Optuna-tuned

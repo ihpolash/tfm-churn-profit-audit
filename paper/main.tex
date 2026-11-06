@@ -20,7 +20,7 @@
 \begin{document}
 
 \title{Tabular Foundation Models vs Tuned Gradient Boosting\\
-for Telecom Churn: A Profit and Calibration Aware Evaluation}
+for Telecom Churn: A Profit- and Calibration-Aware Evaluation}
 \author{Ismail Hossain Polas\\ Jahangirnagar University\\ \texttt{ismailhossainpolash@gmail.com}}
 \date{}
 
@@ -189,8 +189,11 @@ tuned, which is how these models are meant to be used.
 
 \textbf{Tuned baselines.} LightGBM \cite{ke2017lightgbm} and XGBoost \cite{chen2016xgboost} are tuned with 40 trials
 of Optuna's TPE sampler \cite{akiba2019optuna}, and CatBoost \cite{prokhorenkova2018catboost} with 25, each under a
-20-minute cap. Trials are scored by validation AUC on an inner 80/20 split of the training data with early stopping;
-the best configuration is then refit on the whole training split with the selected number of trees. Search spaces are
+20-minute cap. Trials are scored by validation AUC on an inner 80/20 split of the training data with early stopping.
+We tune on AUC rather than EMP because AUC is a standard tuning objective and, like EMP, depends only on the ranking,
+while EMP estimated on a small inner split, with few churners, is a noisier objective.
+Tuning the GBDTs on EMP directly might narrow the EMP gaps; we did not test this (Section~\ref{sec:lim}). The best
+configuration is then refit on the whole training split with the selected number of trees. Search spaces are
 listed in Appendix~\ref{app:repro}. We also report an explainable boosting machine (EBM) \cite{nori2019interpretml} and
 logistic regression with one-hot encoding and median imputation, both at defaults.
 
@@ -346,21 +349,26 @@ Orange is the exception, and one model drives it. Raw TabICL v2 predicts \citlIC
 little churn on a base rate of \rateOrange\% (Figure~\ref{fig:rel}), and the policy built on those probabilities loses
 \regICLOrangeRaw\% of attainable profit. Isotonic regression cuts the loss to \regICLOrangeIso\% and Platt scaling to
 \regICLOrangePlatt\%. TabICL v2 also underpredicts on Cell2Cell (by \citlICLCellTwoCellAbs{} points), as does TabPFN-2.5
-(\citlPFNTwoCellTwoCellAbs). TabPFN-3.5's calibration-in-the-large stays within $\pm$\maxAbsCitlPFNThree{} points on
-every dataset, so it is the only \tfm here whose raw probabilities can drive a threshold policy. The tuned GBDTs are
-close to zero as well, consistent with their fitting to the observed base rate.
+(\citlPFNTwoCellTwoCellAbs). The calibration-in-the-large of TabPFN-3.5 and TabPFN-3.5-Fast stays within $\pm$\maxAbsCitlPFNThree{} and
+$\pm$\maxAbsCitlPFNFast{} points on every dataset, so these two are the \tfms whose raw probabilities can drive a threshold
+policy without recalibration. The tuned GBDTs are close to zero as well, consistent with their fitting to the observed
+base rate. Among all nine models, TabPFN-3.5 has the lowest raw Brier score on \nBrierBestPFNThree{} of five datasets
+and the lowest raw ECE on \nECEBestPFNThree; the Brier score also rewards its better ranking, so it is not a pure
+calibration measure.
 
 \begin{table}[t]
-\caption{Calibration. CITL: observed minus mean predicted churn rate (points; positive = underprediction). Regret:
-share of best-cutoff profit lost by the fixed-threshold policy (median over the cost grid), raw / isotonic / Platt.
-The first row per dataset is the best tuned GBDT.}
+\caption{Calibration of raw and recalibrated probabilities. CITL: observed minus mean predicted churn rate (points;
+positive = underprediction). Brier: raw Brier score. Regret: share of best-cutoff profit lost by the fixed-threshold
+policy (median over the cost grid), raw / isotonic / Platt. The first row per dataset is the reference GBDT (best tuned
+GBDT on calibration-split EMP); the other two tuned GBDTs, EBM and logistic regression are omitted for space, and all
+models' calibration metrics are in the released \texttt{metrics\_summary.csv}.}
 \label{tab:cal}
 \centering\scriptsize
-\begin{tabular}{@{}llrrrrrr@{}}
+\begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-& & & \multicolumn{2}{c}{ECE} & \multicolumn{3}{c}{Policy regret (\%)} \\
-\cmidrule(lr){4-5}\cmidrule(l){6-8}
-Dataset & Model & CITL & raw & iso. & raw & iso. & Platt \\
+& & & & \multicolumn{2}{c}{ECE} & \multicolumn{3}{c}{Policy regret (\%)} \\
+\cmidrule(lr){5-6}\cmidrule(l){7-9}
+Dataset & Model & CITL & Brier & raw & iso. & raw & iso. & Platt \\
 \midrule
 \tabin{tables/calibration.tex}
 \bottomrule
@@ -561,7 +569,7 @@ significant after correction, the splits resample a single operator's customers,
 finding least likely to change is the calibration pattern, which is consistent across splits and matches the
 underprediction reported for credit risk \cite{baesens2026creditrisk}.
 
-\section{Limitations}
+\section{Limitations}\label{sec:lim}
 
 The evidence rests on three real-operator datasets. The \nSeeds{} splits are resamples of the same customers, not
 independent operators, so they measure stability within a dataset rather than generalisation across operators. With \nSeeds{} splits and a correction over \nPrimary{}
@@ -571,7 +579,7 @@ industries, or to operators with millions of customers, where the context would 
 
 The baselines were tuned with 25 to 40 trials; 200 trials for LightGBM and CatBoost (XGBoost was not rerun), on five splits of three datasets, changed the reference only on Cell2Cell and no conclusion, but we did no
 feature engineering, which can shift model comparisons \cite{tschalzev2026tabprep}, and we did not record the selected
-hyperparameters. Removing duplicate feature rows is a design choice; the grouped-split check covers it for the three
+hyperparameters. The GBDTs were tuned on AUC, not on the EMP our primary comparison uses. Removing duplicate feature rows is a design choice; the grouped-split check covers it for the three
 affected datasets. The ablations, the sensitivity checks and the replication use five splits.
 
 The cost model behind EMP and the policy uses the standard population-level parameters \cite{verbraken2013emp};
@@ -584,8 +592,8 @@ covered by \cite{seyedzadeh2026churn}.
 Measured with tuned baselines, in money, and with a correction for multiple comparisons, tabular foundation models pay
 off for churn selectively, on evidence from three real-operator datasets and two fictional ones. TabPFN-3.5 earns significantly more campaign profit than each of three tuned GBDTs on
 Cell2Cell and Iranian. It is ahead in every split on Orange, but that gain is not significant after correction, and it
-is never behind; its raw probabilities are
-also the best calibrated. The weights we used, however, cannot be used in production under their licence (TabPFN-3.5 License v1.0, read in
+is never behind; its raw probabilities have the lowest Brier score on \nBrierBestPFNThree{} of five datasets and the
+lowest ECE on \nECEBestPFNThree, and are close to the observed churn rate on every dataset, as are TabPFN-3.5-Fast's. The weights we used, however, cannot be used in production under their licence (TabPFN-3.5 License v1.0, read in
 October 2026) without a commercial agreement. TabICL v2
 and TabPFN-2.5 are rarely distinguishable from a tuned GBDT, and TabICL v2 needs recalibration before its probabilities
 can drive a campaign. Profit metrics confirm clear winners and reshuffle ties. We release the pipeline and every
