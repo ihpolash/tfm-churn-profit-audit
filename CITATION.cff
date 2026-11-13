@@ -19,3 +19,8 @@ preferred-citation:
       given-names: Ismail Hossain
       affiliation: Jahangirnagar University
   year: 2026
+  journal: "arXiv preprint arXiv:2611.12942"
+  url: "https://arxiv.org/abs/2611.12942"
+  identifiers:
+    - type: other
+      value: "arXiv:2611.12942"

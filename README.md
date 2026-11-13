@@ -1,10 +1,11 @@
 # Tabular Foundation Models vs Tuned Gradient Boosting for Telecom Churn
 
+[![arXiv](https://img.shields.io/badge/arXiv-2611.12942-b31b1b.svg)](https://arxiv.org/abs/2611.12942)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24015719.svg)](https://doi.org/10.5281/zenodo.24015719)
 
 Code, per-split predictions and paper source for **"Tabular Foundation Models vs Tuned Gradient Boosting for
-Telecom Churn: A Profit- and Calibration-Aware Evaluation"** (Ismail Hossain Polas, Jahangirnagar University). The paper PDF is
-[`paper/main.pdf`](paper/main.pdf); arXiv link to follow.
+Telecom Churn: A Profit- and Calibration-Aware Evaluation"** (Ismail Hossain Polas, Jahangirnagar University). The paper is on
+arXiv as [arXiv:2611.12942](https://arxiv.org/abs/2611.12942); the source and PDF are in [`paper/`](paper/).
 
 We compare four tabular foundation models (TabPFN-2.5, TabPFN-3.5, TabPFN-3.5-Fast, TabICL v2) against Optuna-tuned
 LightGBM, XGBoost and CatBoost, plus EBM and logistic regression. The comparison covers five public telecom churn
