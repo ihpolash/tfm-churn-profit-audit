@@ -33,6 +33,8 @@ is_tfm = lambda m: m.startswith(("tabpfn", "tabicl"))
 is_ablation = lambda m: "__ctx_" in m  # context-construction variants, kept out of the main rank tables
 REPLICATION = {"ecommerce"}            # workshop-paper replication check, kept out of cross-dataset tables
 STRONG = ["lgbm_200", "catboost_200"]  # 200-trial baselines, used only in the tuning-budget sensitivity check
+EMPTUNED = ["lgbm_emp", "xgb_emp", "catboost_emp"]  # GBDTs tuned on inner-split EMP instead of AUC (sensitivity only)
+EXTRA = STRONG + EMPTUNED  # kept out of the main tables, rankings and scenario grid
 BASE_TFMS = ["tabicl_v2", "tabpfn_2_5", "tabpfn_3_5", "tabpfn_3_5_fast"]
 BH = 1000                              # two-level bootstrap resamples
 is_sensitivity = lambda ds: ds.endswith("_dupgroup")  # duplicates kept, split by duplicate group
@@ -183,7 +185,7 @@ def main():
             row["eprof_top20"] = eprofits(yte, pte, tp, fp, "top20")
             row["eprof_best"] = eprofits(yte, pte, tp, fp, "best")
         rows.append(row)
-        if not (is_ablation(model) or ds in REPLICATION or is_sensitivity(ds) or model in STRONG):
+        if not (is_ablation(model) or ds in REPLICATION or is_sensitivity(ds) or model in EXTRA):
             for (clv, d, a, b), et, ec in zip(SCENARIOS, emp_grid(yte, pte), emp_grid(ycal, P["p_cal"])):
                 scn.append(dict(dataset=ds, model=model, seed=seed, clv=clv, d=d, accept=a / (a + b), emp=et, emp_cal=ec))
         for clv in (100, 200, 500):
@@ -249,7 +251,7 @@ def main():
 
     # ---- rank agreement between ranking metrics and profit metrics (main models only)
     M_all, M = M, M[~M.model.map(is_ablation) & ~M.dataset.isin(REPLICATION) & (M.model != "xgb_default")
-                    & ~M.dataset.map(is_sensitivity) & ~M.model.isin(STRONG)]
+                    & ~M.dataset.map(is_sensitivity) & ~M.model.isin(EXTRA)]
     ra = []
     pm = [c for c in ("emp", "eprof_top20", "eprof_best", "eprof_thr0.5_raw") if c in M.columns]
     for (ds, seed), g in M.groupby(["dataset", "seed"]):
@@ -338,6 +340,10 @@ def inference(M, preds, side):
                 cal_s = M[(M.dataset == ds) & M.seed.isin(ss)].groupby("model")[f"{met}_cal"].mean()
                 refsets["strong_base"], refsets["strong"] = cal_s[gb].idxmax(), cal_s[gb + strong].idxmax()
                 only["strong_base"] = only["strong"] = ss
+            emp_t = [m for m in EMPTUNED if m in mean_cal[met].index]
+            if len(emp_t) == len(EMPTUNED):  # tuning-objective check: GBDTs tuned on EMP, chosen on the calibration split
+                refsets["emp_tuned"] = mean_cal[met][emp_t].idxmax()
+                refsets["any_tuned"] = mean_cal[met][gb + emp_t].idxmax()  # best of AUC- and EMP-tuned
             if "xgb_default" in mean[met].index:
                 refsets["default"] = "xgb_default"
             for refset, ref in refsets.items():

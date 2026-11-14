@@ -128,7 +128,10 @@ for ds in MAIN:
     for i, tfm in enumerate(TFMS):
         r = inf[(ds, "emp", tfm, "tuned")]
         bold = (lambda x: f"\\textbf{{{x}}}") if holm_sig(r) else (lambda x: x)
-        lines.append(("\\multirow{4}{*}{" + DS_NAME[ds] + "}" if i == 0 else "")
+        ref = r["ref"]  # one reference GBDT per dataset, shared by the four TFMs
+        first = ("\\multirow{4}{*}{" + DS_NAME[ds] + "} & \\multirow{4}{*}{\\shortstack[l]{" + M_NAME[ref]
+                 + "\\\\" + f(summ[(ds, ref)]["emp_mean"]) + "}}")
+        lines.append((first if i == 0 else " &")
                      + f" & {M_NAME[tfm]} & ${num(r, 'mean_diff'):+.3f}$ & ${num(r, 'rel_pct'):+.1f}$ & "
                      f"$[{num(r, 'nb_lo'):+.3f}, {num(r, 'nb_hi'):+.3f}]$ & {r['seeds_positive']}/{r['J']} & "
                      f"{pfmt(num(r, 'nb_p'))} & {bold(pfmt(num(r, 'holm_p')))} & "
@@ -155,7 +158,7 @@ for t, k in (("tabpfn_3_5", "PFNThree"), ("tabicl_v2", "ICL"), ("tabpfn_2_5", "P
     macro(f"nNegEMP{k}", str(sum(num(r, "hier_hi") < 0 for r in rs)))
     macro(f"nAllSeeds{k}", str(sum(int(r["seeds_positive"]) == int(r["J"]) for r in rs)))
 for ds in MAIN:
-    for t, k in (("tabpfn_3_5", "PFNThree"), ("tabicl_v2", "ICL"), ("tabpfn_2_5", "PFNTwo")):
+    for t, k in (("tabpfn_3_5", "PFNThree"), ("tabicl_v2", "ICL"), ("tabpfn_2_5", "PFNTwo"), ("tabpfn_3_5_fast", "PFNFast")):
         r = inf[(ds, "emp", t, "tuned")]
         macro(f"emp{k}{DS_KEY[ds]}", f"{num(r, 'rel_pct'):+.1f}")
         macro(f"empAbs{k}{DS_KEY[ds]}", f"{num(r, 'mean_diff'):+.3f}")
@@ -245,7 +248,11 @@ if scn:
         default_top = next(r["top_model"] for r in g if (float(r["clv"]), float(r["d"]), round(float(r["accept"]), 2)) == (200, 10, 0.3))
         same = sum(r["top_model"] == default_top for r in g)
         refs = len({r["ref"] for r in g})
-        lines.append(f"{DS_NAME[ds]} & {M_NAME[default_top]} & {same}/{nsc} & ${min(rel):+.1f}$ to ${max(rel):+.1f}$ & {pos}/{nsc} & {sig}/{nsc} & {refs} \\\\")
+        lo, hi = min(g, key=lambda r: float(r["rel_pct"])), max(g, key=lambda r: float(r["rel_pct"]))
+        ext = lambda r: (f"${float(r['rel_pct']):+.1f}$ & ${float(r['mean_diff']):+.3f}$ & {float(r['ref_emp']):.3f}")
+        lines.append(f"{DS_NAME[ds]} & {M_NAME[default_top]} & {same}/{nsc} & {ext(lo)} & {ext(hi)} & {pos}/{nsc} & {sig}/{nsc} \\\\")
+        k = DS_KEY[ds]
+        macro(f"scnAbsMax{k}", f"{float(hi['mean_diff']):.3f}"); macro(f"scnRefMax{k}", f"{float(hi['ref_emp']):.3f}")
         k = DS_KEY[ds]
         macro(f"scnPos{k}", str(pos)); macro(f"scnSig{k}", str(sig)); macro(f"scnTopSame{k}", str(same))
         macro(f"scnRelMin{k}", f"{min(rel):+.1f}"); macro(f"scnRelMax{k}", f"{max(rel):+.1f}")
@@ -316,6 +323,38 @@ for ds in ("cell2cell", "iranian", "orange"):
             macro(f"strongRef{DS_KEY[ds]}", M_NAME.get(b["ref"], b["ref"]))
 if lines:
     write("strong.tex", "\n".join(lines) + "\n")
+
+# ---------------------------------------------------------------- EMP-tuned GBDTs (tuning objective check)
+lines, shifts, flips, emp_ref = [], [], 0, set()
+for ds in MAIN:
+    for i, tfm in enumerate(TFMS):
+        a, b = inf[(ds, "emp", tfm, "tuned")], inf[(ds, "emp", tfm, "any_tuned")]
+        da, db = num(a, "mean_diff"), num(b, "mean_diff")
+        shifts.append(abs(db - da))
+        flips += (da > 0) != (db > 0)
+        if b["ref"].endswith("_emp"):
+            emp_ref.add(ds)
+        name = M_NAME.get(b["ref"].removesuffix("_emp"), b["ref"]) + (" (EMP)" if b["ref"].endswith("_emp") else "")
+        lines.append((f"\\multirow{{4}}{{*}}{{{DS_NAME[ds]}}}" if i == 0 else "") +
+                     f" & {M_NAME[tfm]} & ${da:+.3f}$ & ${num(a, 'rel_pct'):+.1f}\\%$ & "
+                     + (f"\\multirow{{4}}{{*}}{{{name}}}" if i == 0 else "") +
+                     f" & ${db:+.3f}$ & ${num(b, 'rel_pct'):+.1f}\\%$ & {b['seeds_positive']}/{b['J']} & "
+                     f"{pfmt(num(b, 'nb_p'))} \\\\")
+    lines.append("\\midrule")
+write("emptuned.tex", "\n".join(lines[:-1]) + "\n")
+macro("maxEmpTuneShift", f"{max(shifts):.3f}")
+macro("nEmpTuneSignFlip", str(flips))
+macro("nEmpRefDatasets", str(len(emp_ref)))
+macro("empRefDatasets", ", ".join(DS_NAME[d] for d in MAIN if d in emp_ref))
+macro("empTunedPFNThreeOrange", f"{num(inf[('orange', 'emp', 'tabpfn_3_5', 'emp_tuned')], 'rel_pct'):+.1f}")
+macro("anyTunedPFNThreeMavenP", pfmt(num(inf[('maven', 'emp', 'tabpfn_3_5', 'any_tuned')], 'nb_p')))
+macro("empTunedPFNThreeIranian", f"{num(inf[('iranian', 'emp', 'tabpfn_3_5', 'emp_tuned')], 'rel_pct'):+.1f}")
+
+hp = list(csv.DictReader(open(ROOT / "results/gbdt_hyperparameters.csv")))
+hp_auc = [r for r in hp if r["tuning_objective"] == "auc"]
+macro("nHyperConfigs", f"{len(hp):,}")
+macro("nHyperAUC", str(len(hp_auc)))
+macro("nHyperReproduce", str(sum(r["reproduces_released"] == "True" for r in hp_auc)))
 per_seed = defaultdict(list)
 for r in rows("metrics_per_seed.csv"):
     per_seed[(r["dataset"], r["model"])].append(r)
@@ -390,7 +429,7 @@ macro("timePFNUncachedSmallOrange", f"{tim[('orange', 'tabpfn_3_5', 1000)]['s_pe
 macro("hoursPFNCacheMillion", f"{min(tim[('orange', 'tabpfn_3_5_cache', n)]['s_per_10k'] for n in (10000, 50000)) * 100 / 3600:.2f}")
 
 all_runs = [r for p in sorted(K.glob("*/runs.json")) for r in json.load(open(p))]
-macro("nRuns", f"{sum(r['status'] == 'ok' for r in all_runs):,}")
+macro("nRuns", f"{sum(r['status'] == 'ok' and not r['model'].endswith('_rerun') for r in all_runs):,}")  # reruns only verify
 for k, v in list(MACROS.items()):  # unsigned twin for prose where the wording carries the sign ("gains 17.8%")
     if v[:1] in "+-":
         MACROS[k + "Abs"] = v[1:]

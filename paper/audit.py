@@ -69,9 +69,12 @@ def npz_int_arrays(path, names):
     return out
 
 
-runs, splits = [], defaultdict(dict)
+runs, reruns, splits = [], [], defaultdict(dict)
 for rj in sorted(K.glob("*/runs.json")):
     for r in json.load(open(rj)):
+        if r["model"].endswith("_rerun"):  # verification reruns save no predictions; checked in 7c
+            reruns.append(r)
+            continue
         runs.append(r)
         f = rj.parent / "preds" / f"{r['model']}_s{r['seed']}.npz"
         if r["status"] == "ok":
@@ -127,6 +130,7 @@ def holm_adjust(ps):
 
 
 INF = list(csv.DictReader(open(A / "inference.csv")))
+MAIN5 = {"telco", "maven", "cell2cell", "iranian", "orange"}
 fl = lambda r, k: float(r[k]) if r.get(k) not in (None, "") else float("nan")
 worst_t = worst_p = 0.0
 for r in INF:
@@ -180,7 +184,7 @@ check(len(prim) == 20 and len({(r["dataset"], r["tfm"]) for r in prim}) == 20
 # Relative gain = 100 x mean per-split difference / mean reference EMP over the same splits.
 test_by_seed = {(r["dataset"], r["model"], r["seed"]): float(r["emp"]) for r in csv.DictReader(open(A / "metrics_per_seed.csv"))}
 rel_err = max(abs(fl(r, "rel_pct") - 100 * fl(r, "mean_diff") / abs(st.mean(test_by_seed[(r["dataset"], r["ref"], s)] for s in seeds_of(r))))
-              for r in INF if r["metric"] == "emp" and r["ref_set"] in ("tuned", "strong", "strong_base"))
+              for r in INF if r["metric"] == "emp" and r["ref_set"] in ("tuned", "strong", "strong_base", "emp_tuned", "any_tuned"))
 check(rel_err < 1e-6, f"relative EMP gains use the reference's mean EMP over the compared splits as denominator (max diff {rel_err:.1e})")
 
 # 7. Robustness checks cover exactly the datasets and splits the paper states.
@@ -191,6 +195,24 @@ check({d for d, _ in strong} == {"cell2cell", "iranian", "orange"} and all(j == 
 check({d for d, _ in dup} == {"telco_dupgroup", "iranian_dupgroup", "ecommerce_dupgroup"} and all(j == "5" for _, j in dup),
       "duplicate-group checks cover Telco, Iranian and E-Commerce with five splits")
 check(all(r["J"] == "10" for r in prim), "every primary comparison uses ten splits")
+
+# 7c. Tuning-objective check and released hyperparameters.
+GB, GBE = ("lgbm", "xgb", "catboost"), ("lgbm_emp", "xgb_emp", "catboost_emp")
+obj = [r for r in INF if r["ref_set"] in ("emp_tuned", "any_tuned") and r["metric"] == "emp"
+       and r["dataset"] in MAIN5 and "__" not in r["tfm"]]
+check(len(obj) == 40 and all(r["J"] == "10" for r in obj) and
+      all(r["ref"] == best_cal(r, GBE if r["ref_set"] == "emp_tuned" else GB + GBE) for r in obj),
+      "tuning-objective check: 20 comparisons per reference set, ten splits each, references chosen on calibration-split EMP")
+hp = list(csv.DictReader(open(ROOT / "results/gbdt_hyperparameters.csv")))
+cells = {(r["dataset"], r["model"], r["tuning_objective"], str(r["seed"])) for r in hp}
+expected = {(r["dataset"], m, o, str(r["seed"])) for r in ok if r["model"] in GB + GBE and r["dataset"] in MAIN5 | {"ecommerce"}
+            for m, o in [(r["model"].removesuffix("_emp"), "emp" if r["model"].endswith("_emp") else "auc")]}
+check(len(cells) == len(hp) and cells == expected,
+      f"released hyperparameters: one row for each of the {len(expected)} tuned GBDT fits with released predictions")
+check(all(r["reproduces_released"] == "True" for r in hp if r["tuning_objective"] == "auc") and
+      all(r["status"] == "ok" and r["same_split"] and r["max_abs_diff_test"] == 0 for r in reruns) and
+      len(reruns) == sum(r["tuning_objective"] == "auc" for r in hp),
+      f"all {len(reruns)} AUC-tuned reruns reproduce the released test predictions exactly")
 
 # 7b. The campaign-economics grid reproduces the primary comparison under the default EMP parameters.
 scn = list(csv.DictReader(open(A / "emp_scenarios.csv")))

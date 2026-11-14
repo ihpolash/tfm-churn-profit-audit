@@ -9,7 +9,7 @@ from functools import partial
 
 DATASET = "__DATASET__"  # telco | maven | cell2cell | iranian | orange | ecommerce (replication) | all (timing)
                          # suffix _dupgroup: keep duplicates, but never split identical rows (sensitivity check)
-GROUP = "__GROUP__"      # cpu | gpu | context | strong (200-trial GBDTs) | timing
+GROUP = "__GROUP__"      # cpu | gpu | context | strong (200-trial GBDTs) | retune | timing
 GPU = GROUP in ("gpu", "context", "timing")
 BASE = DATASET.removesuffix("_dupgroup")
 DEDUP = not DATASET.endswith("_dupgroup")
@@ -120,15 +120,36 @@ def inner(X, y, seed):
     return train_test_split(X, y, test_size=0.2, stratify=y, random_state=seed)
 
 
+LAST = {}  # selected configuration of the most recent tuned fit, written into runs.json
+
+
+def emp_score(y, p, clv=200.0, d=10.0, f=1.0, a=6.0, b=14.0):
+    """EMP (Verbraken et al. 2013) with the paper's default parameters; tuning objective for the *_emp baselines."""
+    from scipy import stats
+    g = (np.arange(200) + 0.5) / 200; w = stats.beta.pdf(g, a, b); w /= w.sum()
+    ys = y[np.argsort(-p)]
+    n1 = np.concatenate([[0], np.cumsum(ys)]); n0 = np.arange(len(ys) + 1) - n1
+    prof = np.outer(g * (clv - d) - f, n1) - (d + f) * n0[None, :]
+    return float((w * prof.max(axis=1)).sum() / len(y))
+
+
+def val_score(score, yv, pv):
+    from sklearn.metrics import roc_auc_score
+    return emp_score(yv, pv) if score == "emp" else roc_auc_score(yv, pv)
+
+
 def tune(objective, n_trials, seed, timeout=1200):
     import optuna
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     st = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=seed))
     st.optimize(objective, n_trials=n_trials, timeout=timeout)
-    return st.best_trial
+    b = st.best_trial
+    LAST.clear(); LAST.update(params=dict(b.params), n_trees=b.user_attrs["n"], n_trials_run=len(st.trials),
+                              best_value=b.value)
+    return b
 
 
-def fit_lgbm(X, y, seed, cat, n_trials=40, timeout=1200):
+def fit_lgbm(X, y, seed, cat, n_trials=40, timeout=1200, score="auc"):
     import lightgbm as lgb
     from sklearn.metrics import roc_auc_score
     Xa, Xv, ya, yv = inner(X, y, seed)
@@ -140,7 +161,7 @@ def fit_lgbm(X, y, seed, cat, n_trials=40, timeout=1200):
         m = lgb.LGBMClassifier(n_estimators=3000, subsample_freq=1, verbose=-1, random_state=seed, **p)
         m.fit(Xa, ya, eval_set=[(Xv, yv)], eval_metric="auc", callbacks=[lgb.early_stopping(100, verbose=False)])
         t.set_user_attr("n", m.best_iteration_ or 3000)
-        return roc_auc_score(yv, m.predict_proba(Xv)[:, 1])
+        return val_score(score, yv, m.predict_proba(Xv)[:, 1])
 
     b = tune(obj, n_trials, seed, timeout)
     p = b.params
@@ -149,7 +170,7 @@ def fit_lgbm(X, y, seed, cat, n_trials=40, timeout=1200):
                               colsample_bytree=p["cs"], reg_lambda=p["l2"]).fit(X, y)
 
 
-def fit_xgb(X, y, seed, cat):
+def fit_xgb(X, y, seed, cat, score="auc"):
     import xgboost as xgb
     from sklearn.metrics import roc_auc_score
     Xa, Xv, ya, yv = inner(X, y, seed)
@@ -164,7 +185,7 @@ def fit_xgb(X, y, seed, cat):
                               random_state=seed, n_jobs=-1, **params(t))
         m.fit(Xa, ya, eval_set=[(Xv, yv)], verbose=False)
         t.set_user_attr("n", m.best_iteration + 1)
-        return roc_auc_score(yv, m.predict_proba(Xv)[:, 1])
+        return val_score(score, yv, m.predict_proba(Xv)[:, 1])
 
     b = tune(obj, 40, seed)
     p = b.params
@@ -173,7 +194,7 @@ def fit_xgb(X, y, seed, cat):
                              colsample_bytree=p["cs"], reg_lambda=p["l2"]).fit(X, y)
 
 
-def fit_catboost(X, y, seed, cat, n_trials=25, timeout=1200):
+def fit_catboost(X, y, seed, cat, n_trials=25, timeout=1200, score="auc"):
     from catboost import CatBoostClassifier
     Xa, Xv, ya, yv = inner(X, y, seed)
 
@@ -187,7 +208,7 @@ def fit_catboost(X, y, seed, cat, n_trials=25, timeout=1200):
                                verbose=False, thread_count=-1, **params(t))
         m.fit(Xa, ya, eval_set=(Xv, yv), use_best_model=True)
         t.set_user_attr("n", m.get_best_iteration() + 1)
-        return m.get_best_score()["validation"]["AUC"]
+        return m.get_best_score()["validation"]["AUC"] if score == "auc" else val_score(score, yv, m.predict_proba(Xv)[:, 1])
 
     b = tune(obj, n_trials, seed, timeout)
     p = b.params
@@ -274,6 +295,11 @@ MODELS = {
             "tabpfn_2_5": tabpfn("V2_5")},
     "strong": {"lgbm_200": partial(fit_lgbm, n_trials=200, timeout=3600),
                "catboost_200": partial(fit_catboost, n_trials=200, timeout=3600)},
+    # retune: the AUC-tuned GBDTs again, only to record their selected configuration and check that it reproduces
+    # the released predictions (*_rerun, predictions not saved), plus the same GBDTs tuned on inner-split EMP (*_emp)
+    "retune": {"lgbm_rerun": fit_lgbm, "xgb_rerun": fit_xgb, "catboost_rerun": fit_catboost,
+               "lgbm_emp": partial(fit_lgbm, score="emp"), "xgb_emp": partial(fit_xgb, score="emp"),
+               "catboost_emp": partial(fit_catboost, score="emp")},
     "context": {f"{name}__ctx_1to{r}": with_context(fit, r)
                 for name, fit in (("tabpfn_3_5", tabpfn("V3_5")), ("tabicl_v2", fit_tabicl)) for r in (1, 2)},
 }.get(GROUP, {})
@@ -393,8 +419,21 @@ def main():
                 t0 = time.time(); pte = predict(m, X[ite]); run["pred_s_per_10k"] = (time.time() - t0) / len(ite) * 1e4
                 pcal = predict(m, X[ical])
                 run.update(status="ok", gpu_peak_gb=_gpu_peak())
-                np.savez_compressed(f"{OUT}/preds/{name}_s{seed}.npz", idx_train=itr, idx_cal=ical, idx_test=ite,
-                                    p_cal=pcal, p_test=pte)
+                if LAST:
+                    run.update(LAST); LAST.clear()
+                if name.endswith("_rerun"):  # compare with the released prediction of the original model
+                    orig = glob.glob(f"/kaggle/input/**/preds/{name[:-len('_rerun')]}_s{seed}.npz", recursive=True)
+                    if orig:
+                        o = np.load(orig[0])
+                        same = np.array_equal(o["idx_test"], ite)
+                        run.update(orig_found=True, same_split=bool(same),
+                                   max_abs_diff_test=float(np.abs(o["p_test"] - pte).max()) if same else None,
+                                   max_abs_diff_cal=float(np.abs(o["p_cal"] - pcal).max()) if same else None)
+                    else:
+                        run["orig_found"] = False
+                else:
+                    np.savez_compressed(f"{OUT}/preds/{name}_s{seed}.npz", idx_train=itr, idx_cal=ical, idx_test=ite,
+                                        p_cal=pcal, p_test=pte)
                 from sklearn.metrics import roc_auc_score
                 log(f"   {name} s{seed} fit={run['fit_s']:.0f}s pred/10k={run['pred_s_per_10k']:.1f}s "
                     f"gpu={run['gpu_peak_gb']:.1f}GB auc={roc_auc_score(y[ite], pte):.4f}")

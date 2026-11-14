@@ -34,6 +34,9 @@ for ds in "${datasets[@]}"; do
   if [[ $ds == *-strong ]]; then  # 200-trial LightGBM and CatBoost on CPU, e.g. orange-strong
     groups="strong"; ds="${ds%-strong}"
   fi
+  if [[ $ds == *-retune ]]; then  # record GBDT configurations + EMP-tuned GBDTs, e.g. orange-retune
+    groups="retune"; ds="${ds%-retune}"
+  fi
   for group in $groups; do
     slug="${ds//_/-}-$group"
     seedsed=()
@@ -41,8 +44,11 @@ for ds in "${datasets[@]}"; do
       slug="$slug-s${SEEDS%%,*}to${SEEDS##*,}"; seedsed=(-e "s/^SEEDS = \[0, 1, 2, 3, 4\]/SEEDS = [${SEEDS//,/, }]/")
     fi
     dir="kernels/$slug"; mkdir -p "$dir"
-    sed -e "s/__DATASET__/$ds/" -e "s/__GROUP__/$group/" "${seedsed[@]}" predict.py > "$dir/predict.py"
-    src=$(source_for "$ds")
+    sed -e "s/__DATASET__/$ds/" -e "s/__GROUP__/$group/" ${seedsed[@]+"${seedsed[@]}"} predict.py > "$dir/predict.py"
+    src=$(source_for "$ds"); ksrc=""
+    if [[ $group == retune ]]; then  # attach the original CPU run of the same seeds, to compare predictions
+      ksrc="\"ipolas/churn-bench-${ds//_/-}-cpu${SEEDS:+-s${SEEDS%%,*}to${SEEDS##*,}}\""
+    fi
     if [[ $group == gpu || $group == context || $group == timing ]]; then
       src="${src:+$src, }\"ipolas/tabpfn-token\""; gpu=true; shape='"machine_shape": "NvidiaTeslaT4",'
     else
@@ -62,7 +68,7 @@ for ds in "${datasets[@]}"; do
   $shape
   "keywords": [],
   "dataset_sources": [$src],
-  "kernel_sources": [],
+  "kernel_sources": [$ksrc],
   "competition_sources": [],
   "model_sources": []
 }

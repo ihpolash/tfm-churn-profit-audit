@@ -1,0 +1,52 @@
+{
+ "dataset": "telco",
+ "n": 7003,
+ "n_feat": 19,
+ "churn_rate": 0.26374410966728545,
+ "cols": [
+  "gender",
+  "SeniorCitizen",
+  "Partner",
+  "Dependents",
+  "tenure",
+  "PhoneService",
+  "MultipleLines",
+  "InternetService",
+  "OnlineSecurity",
+  "OnlineBackup",
+  "DeviceProtection",
+  "TechSupport",
+  "StreamingTV",
+  "StreamingMovies",
+  "Contract",
+  "PaperlessBilling",
+  "PaymentMethod",
+  "MonthlyCharges",
+  "TotalCharges"
+ ],
+ "cat_idx": [
+  0,
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16
+ ],
+ "n_dup_removed": 40,
+ "duplicates": {
+  "n_dup": 40,
+  "n_conflict_groups": 18,
+  "n_conflict_rows": 42,
+  "churn_rate_before": 0.2653698707936959,
+  "churn_rate_after_dedup": 0.26374410966728545
+ }
+}

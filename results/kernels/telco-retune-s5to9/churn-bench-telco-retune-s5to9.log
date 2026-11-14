@@ -1,0 +1,44 @@
+[{"stream_name":"stdout","time":31.841922136,"data":"13:50:06 lightgbm 4.6.0\n"}
+,{"stream_name":"stdout","time":31.842865307,"data":"13:50:06 xgboost 3.4.1\n"}
+,{"stream_name":"stdout","time":31.843575732,"data":"13:50:06 catboost 1.2.10\n"}
+,{"stream_name":"stdout","time":31.844343461,"data":"13:50:06 interpret 0.7.8\n"}
+,{"stream_name":"stdout","time":31.845653821,"data":"13:50:06 optuna 5.0.0\n"}
+,{"stream_name":"stdout","time":31.847494661,"data":"13:50:06 scikit-learn 1.6.1\n"}
+,{"stream_name":"stdout","time":32.302485977,"data":"13:50:06 == telco: X=(7003, 19) churn=0.2637 cat=15 duplicates={'n_dup': 40, 'n_conflict_groups': 18, 'n_conflict_rows': 42, 'churn_rate_before': 0.2653698707936959, 'churn_rate_after_dedup': 0.26374410966728545} dedup=True\n"}
+,{"stream_name":"stdout","time":52.345127628,"data":"13:50:26    lgbm_rerun s5 fit=20s pred/10k=0.1s gpu=0.0GB auc=0.8322\n"}
+,{"stream_name":"stdout","time":69.960274706,"data":"13:50:44    xgb_rerun s5 fit=18s pred/10k=0.0s gpu=0.0GB auc=0.8331\n"}
+,{"stream_name":"stdout","time":104.643801226,"data":"13:51:19    catboost_rerun s5 fit=35s pred/10k=0.2s gpu=0.0GB auc=0.8305\n"}
+,{"stream_name":"stdout","time":119.01494175,"data":"13:51:33    lgbm_emp s5 fit=14s pred/10k=0.0s gpu=0.0GB auc=0.8252\n"}
+,{"stream_name":"stdout","time":132.151704188,"data":"13:51:46    xgb_emp s5 fit=13s pred/10k=0.0s gpu=0.0GB auc=0.8285\n"}
+,{"stream_name":"stdout","time":159.295265172,"data":"13:52:13    catboost_emp s5 fit=27s pred/10k=0.0s gpu=0.0GB auc=0.8363\n"}
+,{"stream_name":"stdout","time":166.143389026,"data":"13:52:20    lgbm_rerun s6 fit=7s pred/10k=0.0s gpu=0.0GB auc=0.8603\n"}
+,{"stream_name":"stdout","time":174.499613058,"data":"13:52:29    xgb_rerun s6 fit=8s pred/10k=0.0s gpu=0.0GB auc=0.8598\n"}
+,{"stream_name":"stdout","time":191.379111361,"data":"13:52:45    catboost_rerun s6 fit=17s pred/10k=0.0s gpu=0.0GB auc=0.8596\n"}
+,{"stream_name":"stdout","time":198.704020084,"data":"13:52:53    lgbm_emp s6 fit=7s pred/10k=0.0s gpu=0.0GB auc=0.8453\n"}
+,{"stream_name":"stdout","time":207.547530072,"data":"13:53:02    xgb_emp s6 fit=9s pred/10k=0.0s gpu=0.0GB auc=0.8550\n"}
+,{"stream_name":"stdout","time":224.517293268,"data":"13:53:19    catboost_emp s6 fit=17s pred/10k=0.0s gpu=0.0GB auc=0.8516\n"}
+,{"stream_name":"stdout","time":233.413075743,"data":"13:53:27    lgbm_rerun s7 fit=9s pred/10k=0.0s gpu=0.0GB auc=0.8443\n"}
+,{"stream_name":"stdout","time":247.619009399,"data":"13:53:42    xgb_rerun s7 fit=14s pred/10k=0.0s gpu=0.0GB auc=0.8492\n"}
+,{"stream_name":"stdout","time":261.470131795,"data":"13:53:56    catboost_rerun s7 fit=14s pred/10k=0.0s gpu=0.0GB auc=0.8540\n"}
+,{"stream_name":"stdout","time":269.82751094,"data":"13:54:04    lgbm_emp s7 fit=8s pred/10k=0.0s gpu=0.0GB auc=0.8484\n"}
+,{"stream_name":"stdout","time":280.318058859,"data":"13:54:14    xgb_emp s7 fit=10s pred/10k=0.0s gpu=0.0GB auc=0.8502\n"}
+,{"stream_name":"stdout","time":295.036142497,"data":"13:54:29    catboost_emp s7 fit=15s pred/10k=0.0s gpu=0.0GB auc=0.8519\n"}
+,{"stream_name":"stdout","time":305.649263297,"data":"13:54:40    lgbm_rerun s8 fit=11s pred/10k=0.1s gpu=0.0GB auc=0.8444\n"}
+,{"stream_name":"stdout","time":321.781684802,"data":"13:54:56    xgb_rerun s8 fit=16s pred/10k=0.0s gpu=0.0GB auc=0.8463\n"}
+,{"stream_name":"stdout","time":345.873166712,"data":"13:55:20    catboost_rerun s8 fit=24s pred/10k=0.0s gpu=0.0GB auc=0.8442\n"}
+,{"stream_name":"stdout","time":358.443231525,"data":"13:55:32    lgbm_emp s8 fit=13s pred/10k=0.0s gpu=0.0GB auc=0.8309\n"}
+,{"stream_name":"stdout","time":368.25903968,"data":"13:55:42    xgb_emp s8 fit=10s pred/10k=0.0s gpu=0.0GB auc=0.8392\n"}
+,{"stream_name":"stdout","time":396.104371528,"data":"13:56:10    catboost_emp s8 fit=28s pred/10k=0.0s gpu=0.0GB auc=0.8426\n"}
+,{"stream_name":"stdout","time":405.399290481,"data":"13:56:19    lgbm_rerun s9 fit=9s pred/10k=0.0s gpu=0.0GB auc=0.8431\n"}
+,{"stream_name":"stdout","time":417.883768194,"data":"13:56:32    xgb_rerun s9 fit=12s pred/10k=0.0s gpu=0.0GB auc=0.8449\n"}
+,{"stream_name":"stdout","time":440.797543798,"data":"13:56:55    catboost_rerun s9 fit=23s pred/10k=0.0s gpu=0.0GB auc=0.8407\n"}
+,{"stream_name":"stdout","time":456.493332351,"data":"13:57:11    lgbm_emp s9 fit=16s pred/10k=0.0s gpu=0.0GB auc=0.8408\n"}
+,{"stream_name":"stdout","time":474.418515112,"data":"13:57:28    xgb_emp s9 fit=18s pred/10k=0.1s gpu=0.0GB auc=0.8464\n"}
+,{"stream_name":"stdout","time":508.091507141,"data":"13:58:02    catboost_emp s9 fit=34s pred/10k=0.0s gpu=0.0GB auc=0.8426\n"}
+,{"stream_name":"stderr","time":512.146213626,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":512.146254829,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":512.535670101,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":512.535704256,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":513.616952912,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":514.464811381,"data":"[NbConvertApp] Writing 406200 bytes to __results__.html\n"}
+]

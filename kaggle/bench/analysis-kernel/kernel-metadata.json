@@ -43,7 +43,18 @@
     "ipolas/churn-bench-iranian-cpu-s5to9",
     "ipolas/churn-bench-iranian-gpu-s5to9",
     "ipolas/churn-bench-orange-cpu-s5to9",
-    "ipolas/churn-bench-orange-gpu-s5to9"
+    "ipolas/churn-bench-orange-gpu-s5to9",
+    "ipolas/churn-bench-orange-retune",
+    "ipolas/churn-bench-orange-retune-s5to9",
+    "ipolas/churn-bench-cell2cell-retune",
+    "ipolas/churn-bench-cell2cell-retune-s5to9",
+    "ipolas/churn-bench-maven-retune",
+    "ipolas/churn-bench-maven-retune-s5to9",
+    "ipolas/churn-bench-iranian-retune",
+    "ipolas/churn-bench-iranian-retune-s5to9",
+    "ipolas/churn-bench-telco-retune",
+    "ipolas/churn-bench-telco-retune-s5to9",
+    "ipolas/churn-bench-ecommerce-retune"
   ],
   "competition_sources": [],
   "model_sources": []
