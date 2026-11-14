@@ -8,9 +8,9 @@ authors:
     email: ismailhossainpolash@gmail.com
 license: MIT
 repository-code: "https://github.com/ihpolash/tfm-churn-profit-audit"
-version: "1.5"
+version: "1.6"
 doi: "10.5281/zenodo.24015719"
-date-released: "2026-11-06"
+date-released: "2026-11-14"
 preferred-citation:
   type: article
   title: "Tabular Foundation Models vs Tuned Gradient Boosting for Telecom Churn: A Profit- and Calibration-Aware Evaluation"

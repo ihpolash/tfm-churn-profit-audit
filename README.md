@@ -20,7 +20,7 @@ Three levels, from cheapest to complete.
 **1. Every table and number in the paper, from the released results (seconds, no installs).**
 ```bash
 python3 paper/audit.py          # regenerates paper/tables/ and runs the consistency checks
-cd paper && tectonic main.tex   # or latexmk -pdf main.tex; needs the LNCS class (llncs) and splncs04
+cd paper && tectonic main.tex   # or latexmk -pdf main.tex (standard article class)
 ```
 `audit.py` uses only the Python standard library. It regenerates every table and in-text number from
 `results/kernels/analysis/` and fails if anything differs from the committed files. It also checks that all runs

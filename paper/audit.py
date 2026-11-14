@@ -192,6 +192,15 @@ check({d for d, _ in dup} == {"telco_dupgroup", "iranian_dupgroup", "ecommerce_d
       "duplicate-group checks cover Telco, Iranian and E-Commerce with five splits")
 check(all(r["J"] == "10" for r in prim), "every primary comparison uses ten splits")
 
+# 7b. The campaign-economics grid reproduces the primary comparison under the default EMP parameters.
+scn = list(csv.DictReader(open(A / "emp_scenarios.csv")))
+dflt = {(r["dataset"], r["tfm"]): r for r in scn
+        if (float(r["clv"]), float(r["d"]), round(float(r["accept"]), 2)) == (200.0, 10.0, 0.3)}
+check(len({(r["clv"], r["d"], r["accept"]) for r in scn}) == 27 and
+      all((r["dataset"], r["tfm"]) in dflt and dflt[(r["dataset"], r["tfm"])]["ref"] == r["ref"] and
+          abs(float(dflt[(r["dataset"], r["tfm"])]["mean_diff"]) - fl(r, "mean_diff")) < 1e-9 for r in prim),
+      "EMP scenario grid: 27 scenarios; at the default parameters it reproduces every primary reference and difference")
+
 # 8. Software versions in the kernel logs match the appendix.
 logs = "".join(e.get("data", "") for p in K.glob("*/*.log") for e in json.load(open(p)))
 vers = defaultdict(set)

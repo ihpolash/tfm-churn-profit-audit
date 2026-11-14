@@ -167,6 +167,8 @@ for ds in MAIN:
         macro(f"iuHolm{k}{DS_KEY[ds]}", pfmt(num(r, "iu_holm_p")))
         macro(f"nbLo{k}{DS_KEY[ds]}", f"{num(r, 'nb_lo'):+.3f}")
         macro(f"nbHi{k}{DS_KEY[ds]}", f"{num(r, 'nb_hi'):+.3f}")
+        macro(f"perMillion{k}{DS_KEY[ds]}", f"{round(num(r, 'mean_diff') * 1e6, -3):,.0f}")  # gain per 1M customers
+        macro(f"refEMP{k}{DS_KEY[ds]}", f"{num(r, 'mean_diff') / num(r, 'rel_pct') * 100:.3f}")  # reference mean EMP
 
 # secondary matrix: PR-AUC (points) and EMP (%) differences, markers as above
 lines = []
@@ -228,6 +230,30 @@ macro("maxRegretShiftNonOrange", f"{100 * max(max(abs(float(r['regret_raw']) - f
 macro("maxRawRegretNonOrange", f"{100 * max(float(r['regret_raw']) for r in calm):.1f}")
 for k, col in (("Raw", "regret_raw"), ("Iso", "regret_iso"), ("Platt", "regret_platt")):
     macro(f"regICLOrange{k}", f"{100 * float(reg[('orange', 'tabicl_v2')][col]):.1f}")
+
+# ---------------------------------------------------------------- campaign-economics sensitivity (EMP scenario grid)
+scn = rows("emp_scenarios.csv")
+if scn:
+    lines, keep = [], {}
+    nsc = len({(r["clv"], r["d"], r["accept"]) for r in scn})
+    macro("nScenarios", str(nsc))
+    for ds in MAIN:
+        g = [r for r in scn if r["dataset"] == ds and r["tfm"] == "tabpfn_3_5"]
+        rel = [float(r["rel_pct"]) for r in g]
+        pos = sum(float(r["mean_diff"]) > 0 for r in g)
+        sig = sum(float(r["nb_p"]) < 0.05 for r in g)
+        default_top = next(r["top_model"] for r in g if (float(r["clv"]), float(r["d"]), round(float(r["accept"]), 2)) == (200, 10, 0.3))
+        same = sum(r["top_model"] == default_top for r in g)
+        refs = len({r["ref"] for r in g})
+        lines.append(f"{DS_NAME[ds]} & {M_NAME[default_top]} & {same}/{nsc} & ${min(rel):+.1f}$ to ${max(rel):+.1f}$ & {pos}/{nsc} & {sig}/{nsc} & {refs} \\\\")
+        k = DS_KEY[ds]
+        macro(f"scnPos{k}", str(pos)); macro(f"scnSig{k}", str(sig)); macro(f"scnTopSame{k}", str(same))
+        macro(f"scnRelMin{k}", f"{min(rel):+.1f}"); macro(f"scnRelMax{k}", f"{max(rel):+.1f}")
+    allg = [r for r in scn if r["dataset"] in MAIN and r["tfm"] in ("tabicl_v2", "tabpfn_2_5", "tabpfn_3_5", "tabpfn_3_5_fast")]
+    flips = {(r["dataset"], r["tfm"]) for r in allg} - {(r["dataset"], r["tfm"]) for r in allg
+             if len({float(x["mean_diff"]) > 0 for x in allg if (x["dataset"], x["tfm"]) == (r["dataset"], r["tfm"])}) == 1}
+    macro("nScnSignFlip", str(len(flips)))
+    write("scenarios.tex", "\n".join(lines) + "\n")
 
 # ---------------------------------------------------------------- Table 6: context ablation
 ctx = {(r["dataset"], r["model"]): r for r in rows("context_ablation.csv")}

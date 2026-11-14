@@ -63,6 +63,22 @@ def emp_fast(y, p):
     return float((W * prof.max(axis=1)).sum() / len(y))
 
 
+# EMP sensitivity grid: customer lifetime value x incentive cost x acceptance-rate prior (mean 0.1 / 0.3 / 0.5)
+SCENARIOS = [(clv, d, a, b) for clv in (100, 200, 500) for d in (5, 10, 20) for a, b in ((2, 18), (6, 14), (10, 10))]
+W_AB = {(a, b): (lambda w: w / w.sum())(stats.beta.pdf(GAMMAS, a, b)) for a, b in {(a, b) for *_, a, b in SCENARIOS}}
+
+
+def emp_grid(y, p):
+    """EMP of one ranking under every scenario in SCENARIOS (contact cost fixed at F); same algebra as emp_fast."""
+    ys = y[np.argsort(-p)]
+    n1 = np.concatenate([[0], np.cumsum(ys)]); n0 = np.arange(len(ys) + 1) - n1
+    out = []
+    for clv, d, a, b in SCENARIOS:
+        prof = np.outer(GAMMAS * (clv - d) - F, n1) - (d + F) * n0[None, :]
+        out.append(float((W_AB[(a, b)] * prof.max(axis=1)).sum() / len(y)))
+    return out
+
+
 def emp(y, p):
     ys = y[np.argsort(-p)]
     g = np.where(ys[None, :] == 1, GAMMAS[:, None] * (CLV - D - F) - (1 - GAMMAS[:, None]) * F, -(D + F))
@@ -121,6 +137,7 @@ def calibrators(pcal, ycal, pte):
 
 _rng = np.random.default_rng(1); _y = (_rng.random(3000) < .2).astype(int); _p = _rng.random(3000)
 assert abs(emp(_y, _p) - emp_fast(_y, _p)) < 1e-9, 'emp_fast disagrees with emp'
+assert abs(emp_grid(_y, _p)[SCENARIOS.index((CLV, D, A, BETA))] - emp(_y, _p)) < 1e-9, 'emp_grid default disagrees with emp'
 
 
 # ---------------------------------------------------------------- load
@@ -143,7 +160,7 @@ def load():
 def main():
     runs, preds, side = load()
     print("runs:", runs.groupby(["dataset", "model", "status"]).size().to_string())
-    rows, pol = [], []
+    rows, pol, scn = [], [], []
     for (ds, model, seed), P in sorted(preds.items()):
         y = side[ds]["y"]; yte, ycal, ytr = y[P["idx_test"]], y[P["idx_cal"]], y[P["idx_train"]]
         pte = P["p_test"]
@@ -166,6 +183,9 @@ def main():
             row["eprof_top20"] = eprofits(yte, pte, tp, fp, "top20")
             row["eprof_best"] = eprofits(yte, pte, tp, fp, "best")
         rows.append(row)
+        if not (is_ablation(model) or ds in REPLICATION or is_sensitivity(ds) or model in STRONG):
+            for (clv, d, a, b), et, ec in zip(SCENARIOS, emp_grid(yte, pte), emp_grid(ycal, P["p_cal"])):
+                scn.append(dict(dataset=ds, model=model, seed=seed, clv=clv, d=d, accept=a / (a + b), emp=et, emp_cal=ec))
         for clv in (100, 200, 500):
             for d in (5, 10, 20):
                 rec = dict(dataset=ds, model=model, seed=seed, clv=clv, d=d, oracle=oracle(yte, pte, clv, d))
@@ -173,6 +193,7 @@ def main():
                     rec[f"profit_{k}"] = policy(yte, p, clv, d)
                 pol.append(rec)
     M = pd.DataFrame(rows); POL = pd.DataFrame(pol)
+    scenario_sensitivity(pd.DataFrame(scn))
     M.to_csv(f"{OUT}/metrics_per_seed.csv", index=False); POL.to_csv(f"{OUT}/policy_per_seed.csv", index=False)
 
     t = runs[runs.status == "ok"].groupby(["dataset", "model"])[["fit_s", "pred_s_per_10k", "gpu_peak_gb"]].mean()
@@ -272,6 +293,25 @@ def main():
                           ("Fixed-threshold policy regret vs oracle (median over cost grid & seeds)", CAL), ("Break-even (EMP units = currency with CLV=200)", BE)]:
             fh.write(f"\n## {title}\n\n{df.round(4).to_markdown()}\n")
     print(open(f"{OUT}/summary.md").read())
+
+
+def scenario_sensitivity(S):
+    """Exploratory: does the EMP comparison depend on the campaign economics? For every scenario the reference GBDT is
+    re-chosen on calibration-split EMP under that scenario; differences use the corrected t-test, unadjusted."""
+    out = []
+    for (ds, clv, d, acc), g in S.groupby(["dataset", "clv", "d", "accept"]):
+        mean, mean_cal = g.groupby("model").emp.mean(), g.groupby("model").emp_cal.mean()
+        ref = mean_cal[[m for m in GBDT if m in mean_cal.index]].idxmax()
+        for tfm in [m for m in BASE_TFMS if m in mean.index]:
+            a, b = g[g.model == tfm].set_index("seed").emp, g[g.model == ref].set_index("seed").emp
+            dd = (a - b).dropna().values; J = len(dd)
+            ratio = 1 / 3  # n_test / n_train for the 60/20/20 split
+            var = (1 / J + ratio) * dd.var(ddof=1)
+            t = dd.mean() / np.sqrt(var) if var > 0 else np.inf * np.sign(dd.mean())
+            out.append(dict(dataset=ds, clv=clv, d=d, accept=acc, tfm=tfm, ref=ref, J=J, mean_diff=dd.mean(),
+                            rel_pct=100 * dd.mean() / abs(b.loc[a.index].mean()), seeds_positive=int((dd > 0).sum()),
+                            nb_p=float(2 * stats.t.sf(abs(t), J - 1)), top_model=mean.idxmax(), ref_emp=b.mean()))
+    pd.DataFrame(out).to_csv(f"{OUT}/emp_scenarios.csv", index=False)
 
 
 def inference(M, preds, side):
@@ -378,14 +418,22 @@ def figures(INF, M, preds, side):
     yt, yl = [], []
     for k, r in enumerate(P.itertuples()):
         yy = -k - 0.6 * r.o
-        filled = r.holm_p < 0.05
-        ax.errorbar(r.mean_diff, yy, xerr=[[r.mean_diff - r.nb_lo], [r.nb_hi - r.mean_diff]], fmt="o",
-                    color="#1f4e79", mfc="#1f4e79" if filled else "white", ms=5, capsize=2, lw=1)
+        sig = r.holm_p < 0.05
+        col = "#1f4e79" if sig else "#8c8c8c"
+        ax.errorbar(r.mean_diff, yy, xerr=[[r.mean_diff - r.nb_lo], [r.nb_hi - r.mean_diff]], fmt="o" if sig else "s",
+                    color=col, mfc=col if sig else "white", ms=5.5 if sig else 4.5, capsize=2, lw=1.4 if sig else 1)
         yt.append(yy); yl.append(f"{r.dataset.capitalize() if r.dataset != 'cell2cell' else 'Cell2Cell'} · {names[r.tfm]}")
-    ax.axvline(0, color="grey", lw=0.8)
+    ax.axvline(0, color="black", lw=1.3, zorder=0)
     ax.set_yticks(yt); ax.set_yticklabels(yl, fontsize=7)
-    ax.set_xlabel("EMP difference to best tuned GBDT (per customer, CLV units)")
-    ax.set_title("Filled: Holm-adjusted p < 0.05; bars: corrected-test 95% CI (unadjusted)", fontsize=8)
+    ax.set_xlabel("EMP difference to reference GBDT (per customer, CLV units)")
+    off = 0.015 * (ax.get_xlim()[1] - ax.get_xlim()[0])
+    ax.text(off, max(yt) + 1.2, "TFM earns more \u2192", ha="left", va="bottom", fontsize=7)
+    ax.text(-off, max(yt) + 1.2, "\u2190 GBDT earns more", ha="right", va="bottom", fontsize=7)
+    ax.set_ylim(min(yt) - 1, max(yt) + 2.2)
+    from matplotlib.lines import Line2D
+    ax.legend(handles=[Line2D([], [], marker="o", color="#1f4e79", ls="", label="significant after Holm correction"),
+                       Line2D([], [], marker="s", color="#8c8c8c", mfc="white", ls="", label="not significant")],
+              fontsize=7, loc="lower right", frameon=False)
     fig.tight_layout(); fig.savefig(f"{OUT}/figures/forest_emp.pdf"); plt.close(fig)
 
     ds = "orange"
@@ -408,7 +456,9 @@ def figures(INF, M, preds, side):
             obs = [ys[b == k].mean() for k in range(len(edges) - 1) if (b == k).any()]
             ax.plot(xs, obs, style, ms=3, lw=1, label=kind)
         lim = 0.35
-        ax.plot([0, lim], [0, lim], color="grey", lw=0.8)
+        ax.fill_between([0, lim], [0, lim], [lim, lim], color="#f2e6d9", zorder=0)
+        ax.text(0.02, 0.33, "churn\nunderpredicted", fontsize=6.5, va="top", color="#7a5230")
+        ax.plot([0, lim], [0, lim], color="black", lw=0.9, ls=":", label="perfect calibration")
         ax.set_xlim(0, lim); ax.set_ylim(0, lim); ax.set_title(names[model], fontsize=9)
         ax.set_xlabel("mean predicted churn", fontsize=8)
     axes[0].set_ylabel("observed churn rate", fontsize=8); axes[0].legend(fontsize=7)
